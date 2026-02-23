@@ -8,6 +8,10 @@
     gap: 4rem;
 }
 
+[data-theme='dark'] .features-section {
+    background-color: var(--color-deep-blue);
+}
+
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
