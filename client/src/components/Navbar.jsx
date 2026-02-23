@@ -35,8 +35,8 @@ const Navbar = ({ isDark, toggleTheme }) => {
             <div className="navbar-container">
                 {/* 1. Left: Brand */}
                 <div className="nav-brand">
-                    <Leaf size={28} fill={isDark ? "var(--color-neon-blue)" : "var(--color-deep-blue)"} strokeWidth={0} />
-                    <span style={{ color: isDark ? 'var(--color-neon-blue)' : 'var(--color-deep-blue)' }}>CoLearn</span>
+                    <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                    <span style={{ color: 'var(--color-white)' }}>CoLearn</span>
                 </div>
 
                 {/* 2. Center: Mobile Menu Toggle (Hamburger) - Visible only on mobile */}
@@ -44,7 +44,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         className="mobile-menu-toggle"
                         onClick={toggleMenu}
-                        style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}
+                        style={{ color: 'var(--color-white)' }}
                     >
                         {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
                     </button>
@@ -92,7 +92,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                         <button
                             onClick={toggleTheme}
                             className="theme-toggle"
-                            style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}
+                            style={{ color: 'var(--color-white)' }}
                             aria-label="Toggle Theme"
                         >
                             {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -100,7 +100,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
 
                         <button
                             className="btn-login"
-                            style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)', borderColor: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}
+                            style={{ color: 'var(--color-white)', borderColor: 'var(--color-white)' }}
                             onClick={handleLoginClick}
                         >
                             Login
@@ -116,7 +116,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         onClick={toggleTheme}
                         className="theme-toggle"
-                        style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}
+                        style={{ color: 'var(--color-white)' }}
                         aria-label="Toggle Theme"
                     >
                         {isDark ? <Sun size={24} /> : <Moon size={24} />}
@@ -125,7 +125,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         className="mobile-user-toggle"
                         onClick={toggleMobileUserMenu}
-                        style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}
+                        style={{ color: 'var(--color-white)' }}
                     >
                         <User size={24} />
                     </button>
@@ -133,19 +133,19 @@ const Navbar = ({ isDark, toggleTheme }) => {
             </div>
 
             {/* Mobile Main Menu Overlay (Links only) */}
-            <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)' }}>
+            <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: 'rgba(16, 30, 51, 0.98)' }}>
                 <div className="mobile-nav-links">
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}>Home</button>
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('how-we-work')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}>How We Work</button>
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}>Features</button>
+                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>Home</button>
+                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('how-we-work')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>How We Work</button>
+                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>Features</button>
                 </div>
             </div>
 
             {/* Mobile User Menu Overlay (Auth options) */}
             {isMobileUserMenuOpen && (
-                <div className="mobile-user-dropdown" style={{ backgroundColor: isDark ? '#1a4d2e' : '#8ce655', border: `1px solid ${isDark ? 'var(--color-gold)' : 'var(--color-black)'}` }}>
-                    <button onClick={handleLoginClick} style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}>Login</button>
-                    <button onClick={handleSignupClick} style={{ color: isDark ? 'var(--color-gold)' : 'var(--color-black)' }}>Signup</button>
+                <div className="mobile-user-dropdown" style={{ backgroundColor: '#101e33', border: `1px solid var(--color-neon-blue)` }}>
+                    <button onClick={handleLoginClick} style={{ color: 'var(--color-white)' }}>Login</button>
+                    <button onClick={handleSignupClick} style={{ color: 'var(--color-white)' }}>Signup</button>
                 </div>
             )}
         </nav>

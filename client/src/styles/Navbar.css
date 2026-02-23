@@ -1,31 +1,5 @@
 /* Navbar.css */
-
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 2rem;
-    background-color: transparent;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: background-color 0.3s ease;
-}
-
-.navbar.dark {
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-    background-color: #000000;
-    /* Force black background in dark mode */
-}
-
-.navbar.light {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    background-color: #ffffff;
-    /* Force white background in light mode */
-}
+/* Rules moved and unified below */
 
 /* Navbar.css */
 .navbar {
@@ -38,25 +12,9 @@
     width: 100%;
     z-index: 1000;
     transition: all 0.3s ease;
-    background: transparent;
+    background: rgba(16, 30, 51, 0.8);
     backdrop-filter: blur(10px);
-}
-
-.navbar.dark {
-    background-color: var(--color-black);
-}
-
-.navbar.light {
-    background-color: var(--color-white);
-}
-
-.navbar.light .nav-link {
-    color: var(--color-deep-blue);
-}
-
-.navbar.light .btn-signup {
-    background-color: var(--color-deep-blue);
-    color: var(--color-white);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.1);
 }
 
 .navbar-container {
@@ -78,7 +36,7 @@
     font-size: 1.5rem;
     z-index: 1002;
     cursor: pointer;
-    color: var(--color-neon-blue);
+    color: var(--color-white);
 }
 
 /* Desktop Actions - Container for Links + Buttons */
@@ -99,11 +57,13 @@
     text-decoration: none;
     transition: color 0.3s ease;
     font-size: 1rem;
-    color: var(--color-neon-blue);
+    color: var(--color-white);
+    opacity: 0.8;
 }
 
 .nav-link:hover {
-    opacity: 0.8;
+    color: var(--color-neon-blue);
+    opacity: 1;
 }
 
 .nav-actions {
@@ -122,32 +82,36 @@
     justify-content: center;
     padding: 0.5rem;
     border-radius: 50%;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    color: var(--color-white);
 }
 
 .theme-toggle:hover {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-neon-blue);
 }
 
 /* Auth Buttons */
 .btn-login {
     background: transparent;
-    border: 2px solid;
+    border: 2px solid var(--color-white);
     padding: 0.6rem 1.5rem;
     border-radius: 2rem;
     font-family: var(--font-display);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
+    color: var(--color-white);
 }
 
 .btn-login:hover {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: var(--color-white);
+    color: var(--color-deep-blue);
 }
 
 .btn-signup {
     background-color: var(--color-neon-blue);
-    color: var(--color-black);
+    color: var(--color-white);
     border: none;
     padding: 0.7rem 1.5rem;
     border-radius: 2rem;
@@ -159,7 +123,7 @@
 
 .btn-signup:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(129, 225, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 /* Mobile Controls - Hidden on Desktop */

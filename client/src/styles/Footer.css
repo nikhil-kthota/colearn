@@ -47,18 +47,10 @@
 
 .footer-group {
     font-weight: 700;
-    color: var(--color-neon-blue);
+    color: var(--color-neon-blue) !important;
     font-family: var(--font-display);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-}
-
-[data-theme='light'] .footer-group {
-    color: var(--color-deep-blue);
-}
-
-[data-theme='dark'] .footer-group {
-    color: var(--color-ocean-blue);
 }
 
 .github-link {

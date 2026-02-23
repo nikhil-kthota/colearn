@@ -21,8 +21,8 @@ const Signup = () => {
 
                 <div className="signup-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                        <Leaf size={32} className="brand-icon" strokeWidth={0} />
-                        <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-display)', color: 'var(--color-deep-blue)' }}>CoLearn</span>
+                        <Leaf size={32} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                        <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-display)', color: 'var(--color-white)' }}>CoLearn</span>
                     </div>
                     <h1 className="signup-title">Create Account</h1>
                 </div>

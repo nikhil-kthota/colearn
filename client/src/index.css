@@ -2,28 +2,29 @@
 
 :root {
   /* Core Basics */
-  --color-black: #001820;
+  --color-black: #080f1a;
   --color-white: #ffffff;
 
   /* Palette */
-  --color-deep-blue: #0d2b36;
-  /* Deep Blue */
+  --color-deep-blue: #101e33;
+  /* Background Blue */
   --color-pale-blue: #e0faff;
-  /* Very pale blue */
-  --color-neon-blue: #81E1FF;
-  /* Vibrant Neon Blue */
-  --color-ocean-blue: #00A0D0;
+  /* Kept for subtle things if needed */
+  --color-neon-blue: #10b981;
+  /* Accent Green */
+  --color-ocean-blue: #0ea5e9;
+  /* Supporting Blue */
 
-  --bg-primary: var(--color-white);
-  --bg-card: var(--color-pale-blue);
-  --bg-card-alt: var(--color-deep-blue);
+  --bg-primary: var(--color-deep-blue);
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-alt: var(--color-black);
 
-  --text-primary: var(--color-black);
-  --text-on-dark: var(--color-ocean-blue);
-  --text-on-light: var(--color-black);
+  --text-primary: var(--color-white);
+  --text-on-dark: var(--color-neon-blue);
+  --text-on-light: var(--color-white);
 
   --btn-primary-bg: var(--color-neon-blue);
-  --btn-primary-text: var(--color-black);
+  --btn-primary-text: var(--color-white);
 
 
   --transition-speed: 0.3s;
@@ -36,7 +37,7 @@
   --bg-primary: var(--color-black);
   --bg-card: var(--color-deep-blue);
 
-  --text-primary: var(--color-ocean-blue);
+  --text-primary: var(--color-white);
 }
 
 * {
@@ -129,5 +130,5 @@ p {
 }
 
 [data-theme='dark'] .section-title {
-  color: var(--color-ocean-blue) !important;
+  color: var(--color-neon-blue) !important;
 }

@@ -1,17 +1,20 @@
 /* HowItWorks.css */
 
 .how-it-works-section {
-    background-color: var(--color-ocean-blue);
-    /* Ocean Blue as requested */
-    color: #000000;
     padding: 6rem 2rem;
-    border-top-left-radius: 80px;
-    /* Round corners */
-    border-top-right-radius: 80px;
     position: relative;
     z-index: 10;
-    margin-top: -40px;
-    /* Slight overlap for smooth look if desired, or 0 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme='dark'] .how-it-works-section {
+    background-color: #000000;
+    color: var(--color-white);
+}
+
+[data-theme='light'] .how-it-works-section {
+    background-color: #ffffff;
+    color: var(--color-black);
 }
 
 .hiw-container {
@@ -38,13 +41,6 @@
     font-family: var(--font-display);
     letter-spacing: -2px;
     margin-bottom: 2rem;
-    color: var(--color-white);
-}
-
-[data-theme='dark'] .how-it-works-section,
-[data-theme='dark'] .hiw-main-title,
-[data-theme='dark'] .hiw-step-header {
-    color: #000000;
 }
 
 /* Right Side - Scrolling Steps */
@@ -54,27 +50,21 @@
     font-family: var(--font-display);
     padding-bottom: 1.5rem;
     margin-bottom: 1.5rem;
-    color: var(--color-white);
-}
-
-[data-theme='dark'] .hiw-right-header {
-    color: #000000;
+    opacity: 0.8;
 }
 
 .hiw-right {
     display: flex;
     flex-direction: column;
     padding-bottom: 20vh;
-    /* Extra space to allow last item to be centered */
 }
 
 .hiw-step-item {
     padding: 3rem 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(128, 128, 128, 0.2);
     transition: all 0.5s ease;
     cursor: pointer;
-    opacity: 0.4;
-    /* Inactive state default */
+    opacity: 0.5;
 }
 
 .hiw-step-item.active {
@@ -86,8 +76,10 @@
     font-weight: 600;
     margin-bottom: 1rem;
     font-family: var(--font-display);
-    color: var(--color-white);
+    color: inherit;
 }
+
+.hiw-step-item.active .hiw-step-header {}
 
 .hiw-step-desc {
     display: grid;
@@ -102,17 +94,32 @@
 
 .hiw-step-desc-inner {
     overflow: hidden;
-    color: var(--color-white);
-}
-
-[data-theme='dark'] .hiw-step-desc-inner {
-    color: #333;
+    color: inherit;
 }
 
 .hiw-step-item.active .hiw-step-desc {
     grid-template-rows: 1fr;
     opacity: 1;
     margin-top: 1rem;
+}
+
+/* Heading Colors - Theme Dependent */
+.hiw-main-title,
+.hiw-right-header {
+    color: var(--color-neon-blue);
+    /* Default for Dark Mode */
+}
+
+.hiw-step-item.active .hiw-step-header {
+    color: var(--color-neon-blue);
+    /* Default for Dark Mode */
+}
+
+[data-theme='light'] .hiw-main-title,
+[data-theme='light'] .hiw-right-header,
+[data-theme='light'] .hiw-step-item.active .hiw-step-header {
+    color: var(--color-deep-blue);
+    /* Blue for Light Mode */
 }
 
 /* Responsive */

@@ -1,162 +1,170 @@
-.home-container {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+.home-hero {
     width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    overflow: hidden;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    padding: 0 2rem;
-}
-
-.centered-blob {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(129, 225, 255, 0.15) 0%, rgba(13, 43, 54, 0.05) 50%, transparent 70%);
-    filter: blur(60px);
-    z-index: 0;
-    pointer-events: none;
-    animation: liquidMorph 10s ease-in-out infinite;
-}
-
-[data-theme='light'] .centered-blob {
-    background: radial-gradient(circle, rgba(0, 160, 208, 0.2) 0%, rgba(13, 43, 54, 0.05) 50%, transparent 70%);
-}
-
-@keyframes liquidMorph {
-    0% {
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    50% {
-        border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-        transform: translate(-50%, -50%) scale(1.1);
-    }
-
-    100% {
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-.home-content {
+    padding: 4rem;
     position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+/* Theme Colors */
+.home-hero {
+    background-color: var(--color-neon-blue);
+    /* Universal Green background for Home */
+}
+
+[data-theme='light'] .home-hero {
+    color: var(--color-white);
+}
+
+[data-theme='dark'] .home-hero {
+    color: var(--color-black);
+}
+
+/* Subtitle - Positioned above Brand */
+.hero-top-info {
+    position: absolute;
+    bottom: 18.5rem;
+    /* Adjusted closer to the top of the 15rem brand text */
+    left: 4.5rem;
+    text-align: left;
+    max-width: 800px;
+    z-index: 5;
+}
+
+.hero-subtitle {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    line-height: 1.2;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Brand - Bottom Left */
+.hero-main-brand {
+    position: absolute;
+    bottom: 5rem;
+    left: 4rem;
+    width: auto;
+    z-index: 2;
+}
+
+.hero-company {
+    font-size: 15rem;
+    /* Huge impact */
+    font-weight: 800;
+    margin: 0;
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    font-family: var(--font-display);
+}
+
+/* Side Info Box - Lowered */
+.hero-side-box {
+    position: absolute;
+    top: 25%;
+    /* Lowered from 10% */
+    right: 5%;
+    width: 320px;
+    background-color: var(--color-deep-blue);
+    /* Blue box */
+    padding: 2.5rem;
+    border-radius: 4px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
     z-index: 10;
-    max-width: 900px;
-    width: 100%;
+}
+
+.side-box-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
-.headline {
+.side-box-icon {
+    color: var(--color-neon-blue);
+}
+
+.side-box-title {
     font-family: var(--font-display);
-    font-weight: 300;
-    font-size: 3.5rem;
-    line-height: 1.2;
-    letter-spacing: 0.1em;
-    color: var(--color-neon-blue);
-    text-transform: lowercase;
-    font-variant: small-caps;
-}
-
-[data-theme='light'] .headline {
-    color: var(--color-deep-blue);
-}
-
-.headline span {
-    display: block;
-}
-
-.headline-italic {
-    font-style: italic;
-    font-weight: 300;
+    font-size: 1.4rem;
+    line-height: 1.3;
+    font-weight: 700;
     color: var(--color-neon-blue);
 }
 
-[data-theme='light'] .headline-italic {
-    color: var(--color-ocean-blue);
-}
-
-.sub-headline {
+.side-box-text {
     font-family: var(--font-body);
-    font-size: 1.1rem;
-    max-width: 600px;
-    color: var(--color-ocean-blue);
-    margin-top: 1rem;
+    font-size: 0.9rem;
     line-height: 1.6;
+    color: var(--color-white);
+    opacity: 0.9;
 }
 
-[data-theme='light'] .sub-headline {
-    color: var(--color-deep-blue);
-}
-
-.btn-journey {
-    margin-top: 3rem;
-    background: transparent;
-    color: var(--color-neon-blue);
-    border: 1px solid rgba(129, 225, 255, 0.3);
-    padding: 1rem 2.5rem;
-    border-radius: 9999px;
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-[data-theme='light'] .btn-journey {
-    color: var(--color-deep-blue);
-    border-color: rgba(13, 43, 54, 0.3);
-}
-
-.btn-journey:hover {
-    background: rgba(0, 160, 208, 0.05);
-    border-color: var(--color-ocean-blue);
-    color: var(--color-ocean-blue);
-    box-shadow: 0 0 20px rgba(0, 160, 208, 0.1);
-    letter-spacing: 0.3em;
-}
-
-@media (max-width: 768px) {
-    .home-container {
-        padding: 0 1.5rem;
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .hero-company {
+        font-size: 10rem;
     }
 
-    .centered-blob {
-        width: 350px;
-        height: 350px;
-        filter: blur(40px);
+    .hero-top-info {
+        bottom: 16rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .home-hero {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: auto;
+        padding-top: 8rem;
     }
 
-    .headline {
-        font-size: 2.2rem;
+    .hero-top-info {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        order: 1;
+        /* First: Subtitle */
+        margin-bottom: 0.5rem;
     }
 
-    .sub-headline {
-        font-size: 1rem;
-        max-width: 100%;
+    .hero-main-brand {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        order: 2;
+        /* Second: Brand */
+        margin-bottom: 4rem;
     }
 
-    .btn-journey {
-        margin-top: 2rem;
-        padding: 0.9rem 2rem;
-        font-size: 0.75rem;
+    .hero-company {
+        font-size: 6rem;
+    }
+
+    .hero-side-box {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        order: 3;
+        /* Third: Info Box */
+        margin-bottom: 4rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-company {
+        font-size: 4rem;
     }
 }
