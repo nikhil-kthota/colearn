@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Leaf, Moon, Sun, Menu, X, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Navbar.css';
+import '../../styles/Navbar.css';
 
 const Navbar = ({ isDark, toggleTheme }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);

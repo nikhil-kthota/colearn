@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import '../styles/HowItWorks.css';
+import '../../styles/HowItWorks.css';
 
 const items = [
     {
