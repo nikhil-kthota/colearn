@@ -125,7 +125,6 @@
 /* Responsive */
 @media (max-width: 900px) {
     .how-it-works-section {
-        border-radius: 40px 40px 0 0;
         padding: 4rem 1.5rem;
     }
 

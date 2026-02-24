@@ -10,6 +10,7 @@ const Login = () => {
         e.preventDefault();
         // Add auth logic here later
         console.log("Login clicked");
+        navigate("/dashboard");
     };
 
     return (
@@ -26,6 +27,7 @@ const Login = () => {
                         <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-display)', color: 'var(--color-white)' }}>CoLearn</span>
                     </div>
                     <h1 className="signup-title">Welcome Back</h1>
+                    <p className="signup-subtitle">Pick up exactly where you left off.</p>
                 </div>
 
                 <form className="signup-form" onSubmit={handleLogin}>
@@ -62,17 +64,17 @@ const Login = () => {
 
             <div className="signup-right">
                 <div className="signup-image-bg" style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}signup-bg.png)`,
+                    backgroundImage: `url(${import.meta.env.BASE_URL}signup-bg.jpeg)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                 }} />
 
                 <div className="signup-overlay-text">
                     <h2 className="overlay-heading">
-                        Your path continues here.
+                        Shared minds. Limitless potential.
                     </h2>
                     <p className="overlay-sub">
-                        Log in and push your learning potential to new heights with CoLearn.
+                        Empowering collective minds through shared growth and innovative learning.
                     </p>
                 </div>
             </div>

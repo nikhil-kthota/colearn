@@ -24,7 +24,8 @@ const Signup = () => {
                         <Leaf size={32} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
                         <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-display)', color: 'var(--color-white)' }}>CoLearn</span>
                     </div>
-                    <h1 className="signup-title">Create Account</h1>
+                    <h1 className="signup-title">Join the Community</h1>
+                    <p className="signup-subtitle">Start your journey with us and amplify your potential.</p>
                 </div>
 
                 <form className="signup-form" onSubmit={(e) => e.preventDefault()}>
@@ -62,17 +63,17 @@ const Signup = () => {
 
             <div className="signup-right">
                 <div className="signup-image-bg" style={{
-                    backgroundImage: `url(${import.meta.env.BASE_URL}signup-bg.png)`,
+                    backgroundImage: `url(${import.meta.env.BASE_URL}signup-bg.jpeg)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                 }} />
 
                 <div className="signup-overlay-text">
                     <h2 className="overlay-heading">
-                        Climb higher together.
+                        Shared minds. Limitless potential.
                     </h2>
                     <p className="overlay-sub">
-                        Learn smarter and unlock the peak of your learning potential.
+                        Experience the power of collective intelligence and real-time collaboration.
                     </p>
                 </div>
             </div>

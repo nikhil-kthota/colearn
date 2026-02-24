@@ -54,15 +54,42 @@
     font-family: var(--font-body);
     font-weight: 500;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 1rem;
     color: var(--color-white);
     opacity: 0.8;
+    position: relative;
+    padding: 0.5rem 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 }
 
 .nav-link:hover {
     color: var(--color-neon-blue);
     opacity: 1;
+}
+
+.nav-link.active {
+    opacity: 1;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.5rem;
+    right: 0.5rem;
+    height: 2px;
+    background-color: white;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center;
+}
+
+.nav-link.active::after {
+    transform: scaleX(1);
 }
 
 .nav-actions {
@@ -166,6 +193,7 @@
         border: none;
         cursor: pointer;
         padding: 0.5rem;
+        color: var(--color-white);
     }
 
     /* Mobile Main Menu Overlay */
@@ -213,10 +241,12 @@
         cursor: pointer;
         padding: 0.5rem;
         transition: opacity 0.2s;
+        color: var(--color-neon-blue);
     }
 
     .mobile-nav-links button:hover {
-        opacity: 0.7;
+        color: var(--color-ocean-blue);
+        opacity: 1;
     }
 
     /* User Dropdown */
@@ -246,6 +276,7 @@
         cursor: pointer;
         border-radius: 0.5rem;
         transition: background-color 0.2s;
+        color: var(--color-neon-blue);
     }
 
     .mobile-user-dropdown button:hover {

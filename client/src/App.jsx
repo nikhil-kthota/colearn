@@ -3,7 +3,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom'; // Using
 import LandingPage from './pages/LandingPage'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
-import './App.css'
+import UserHome from './pages/UserHome'
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -21,6 +21,7 @@ function App() {
           <Route path="/" element={<LandingPage isDark={isDark} toggleTheme={toggleTheme} />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<UserHome isDark={isDark} toggleTheme={toggleTheme} />} />
         </Routes>
       </div>
     </Router>

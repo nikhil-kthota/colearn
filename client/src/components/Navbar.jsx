@@ -6,7 +6,30 @@ import '../styles/Navbar.css';
 const Navbar = ({ isDark, toggleTheme }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const sections = ['home', 'how-we-work', 'features'];
+            const scrollPosition = window.scrollY + 100; // Offset for navbar height
+
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element) {
+                    const top = element.offsetTop;
+                    const height = element.offsetHeight;
+                    if (scrollPosition >= top && scrollPosition < top + height) {
+                        setActiveSection(section);
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -30,13 +53,24 @@ const Navbar = ({ isDark, toggleTheme }) => {
         setIsMobileUserMenuOpen(false);
     }
 
+    const handleScrollTo = (id) => {
+        navigate('/');
+        setTimeout(() => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+                setActiveSection(id);
+            }
+        }, 100);
+    };
+
     return (
         <nav className={`navbar ${isDark ? 'dark' : 'light'}`}>
             <div className="navbar-container">
                 {/* 1. Left: Brand */}
-                <div className="nav-brand">
+                <div className="nav-brand" onClick={() => handleScrollTo('home')}>
                     <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
-                    <span style={{ color: 'var(--color-white)' }}>CoLearn</span>
+                    <span>CoLearn</span>
                 </div>
 
                 {/* 2. Center: Mobile Menu Toggle (Hamburger) - Visible only on mobile */}
@@ -44,7 +78,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         className="mobile-menu-toggle"
                         onClick={toggleMenu}
-                        style={{ color: 'var(--color-white)' }}
                     >
                         {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
                     </button>
@@ -57,32 +90,20 @@ const Navbar = ({ isDark, toggleTheme }) => {
                 <div className="desktop-actions">
                     <div className="nav-links">
                         <button
-                            className="nav-link"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem 1rem' }}
-                            onClick={() => {
-                                navigate('/');
-                                setTimeout(() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                            }}
+                            className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
+                            onClick={() => handleScrollTo('home')}
                         >
                             Home
                         </button>
                         <button
-                            className="nav-link"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem 1rem' }}
-                            onClick={() => {
-                                navigate('/');
-                                setTimeout(() => document.getElementById('how-we-work')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                            }}
+                            className={`nav-link ${activeSection === 'how-we-work' ? 'active' : ''}`}
+                            onClick={() => handleScrollTo('how-we-work')}
                         >
                             How We Work
                         </button>
                         <button
-                            className="nav-link"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem 1rem' }}
-                            onClick={() => {
-                                navigate('/');
-                                setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                            }}
+                            className={`nav-link ${activeSection === 'features' ? 'active' : ''}`}
+                            onClick={() => handleScrollTo('features')}
                         >
                             Features
                         </button>
@@ -92,7 +113,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
                         <button
                             onClick={toggleTheme}
                             className="theme-toggle"
-                            style={{ color: 'var(--color-white)' }}
                             aria-label="Toggle Theme"
                         >
                             {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -100,7 +120,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
 
                         <button
                             className="btn-login"
-                            style={{ color: 'var(--color-white)', borderColor: 'var(--color-white)' }}
                             onClick={handleLoginClick}
                         >
                             Login
@@ -116,7 +135,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         onClick={toggleTheme}
                         className="theme-toggle"
-                        style={{ color: 'var(--color-white)' }}
                         aria-label="Toggle Theme"
                     >
                         {isDark ? <Sun size={24} /> : <Moon size={24} />}
@@ -125,7 +143,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button
                         className="mobile-user-toggle"
                         onClick={toggleMobileUserMenu}
-                        style={{ color: 'var(--color-white)' }}
                     >
                         <User size={24} />
                     </button>
@@ -135,17 +152,17 @@ const Navbar = ({ isDark, toggleTheme }) => {
             {/* Mobile Main Menu Overlay (Links only) */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: 'rgba(16, 30, 51, 0.98)' }}>
                 <div className="mobile-nav-links">
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>Home</button>
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('how-we-work')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>How We Work</button>
-                    <button onClick={() => { navigate('/'); setIsMenuOpen(false); setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100); }} style={{ color: 'var(--color-white)' }}>Features</button>
+                    <button onClick={() => { setIsMenuOpen(false); handleScrollTo('home'); }}>Home</button>
+                    <button onClick={() => { setIsMenuOpen(false); handleScrollTo('how-we-work'); }}>How We Work</button>
+                    <button onClick={() => { setIsMenuOpen(false); handleScrollTo('features'); }}>Features</button>
                 </div>
             </div>
 
             {/* Mobile User Menu Overlay (Auth options) */}
             {isMobileUserMenuOpen && (
                 <div className="mobile-user-dropdown" style={{ backgroundColor: '#101e33', border: `1px solid var(--color-neon-blue)` }}>
-                    <button onClick={handleLoginClick} style={{ color: 'var(--color-white)' }}>Login</button>
-                    <button onClick={handleSignupClick} style={{ color: 'var(--color-white)' }}>Signup</button>
+                    <button onClick={handleLoginClick}>Login</button>
+                    <button onClick={handleSignupClick}>Signup</button>
                 </div>
             )}
         </nav>
