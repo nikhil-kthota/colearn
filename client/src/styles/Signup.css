@@ -61,7 +61,7 @@
 /* Theme-aware Form Inputs */
 .form-input {
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 100px;
     background-color: rgba(255, 255, 255, 0.05);
     color: var(--color-white);
     border: 1px solid rgba(16, 185, 129, 0.2);
@@ -86,7 +86,7 @@
     background-color: var(--color-neon-blue);
     color: var(--color-white);
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 100px;
     font-family: var(--font-display);
     font-weight: 700;
     border: none;
@@ -147,7 +147,7 @@
     color: #444;
     /* Standard Google Text Gray */
     padding: 0.8rem;
-    border-radius: 0.5rem;
+    border-radius: 100px;
     font-family: 'Roboto', sans-serif;
     /* Google uses Roboto mostly */
     font-weight: 500;

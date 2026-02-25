@@ -8,10 +8,28 @@ const UserHome = ({ isDark, toggleTheme }) => {
     const [activeTab, setActiveTab] = useState('coding'); // 'coding' or 'learning'
     const [actionType, setActionType] = useState('join'); // 'join' or 'create'
     const [progress, setProgress] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const [formData, setFormData] = useState({
+        create: { roomName: '', roomId: '', roomKey: '' },
+        join: { roomId: '', roomKey: '' }
+    });
 
-    const SLIDE_DURATION = 10000; // 10 seconds per tab
+    const handleInputChange = (e, type) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [type]: {
+                ...prev[type],
+                [name]: value
+            }
+        }));
+    };
+
+    const SLIDE_DURATION = 25000; // 25 seconds per tab
 
     useEffect(() => {
+        if (isPaused) return;
+
         const intervalTime = 50;
         const step = (100 / SLIDE_DURATION) * intervalTime;
 
@@ -23,7 +41,7 @@ const UserHome = ({ isDark, toggleTheme }) => {
         }, intervalTime);
 
         return () => clearInterval(timer);
-    }, [activeTab]);
+    }, [activeTab, isPaused]);
 
     useEffect(() => {
         if (progress >= 100) {
@@ -67,6 +85,9 @@ const UserHome = ({ isDark, toggleTheme }) => {
                         activeTab={activeTab}
                         actionType={actionType}
                         setActionType={setActionType}
+                        setIsPaused={setIsPaused}
+                        formData={formData}
+                        onInputChange={handleInputChange}
                     />
                 </section>
             </main>
