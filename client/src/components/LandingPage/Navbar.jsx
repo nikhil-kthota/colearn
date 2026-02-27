@@ -84,9 +84,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                 </div>
 
 
-                {/* 3. Right: Desktop Links & Actions OR Mobile Theme + User Icon */}
-
-                {/* Desktop View: Normal Links + Auth Buttons */}
+                {/* 3. Desktop View: Normal Links + Auth Buttons */}
                 <div className="desktop-actions">
                     <div className="nav-links">
                         <button
@@ -130,26 +128,39 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     </div>
                 </div>
 
-                {/* Mobile Right Controls: Theme + User Icon */}
+                {/* 4. Mobile Right Controls: Theme + User Icon */}
                 <div className="mobile-right-controls">
                     <button
                         onClick={toggleTheme}
-                        className="theme-toggle"
+                        className="theme-toggle mobile-only-theme"
                         aria-label="Toggle Theme"
                     >
-                        {isDark ? <Sun size={24} /> : <Moon size={24} />}
+                        {isDark ? <Sun size={22} /> : <Moon size={22} />}
                     </button>
 
-                    <button
-                        className="mobile-user-toggle"
-                        onClick={toggleMobileUserMenu}
+                    <div
+                        className="mobile-user-container"
+                        onMouseEnter={() => setIsMobileUserMenuOpen(true)}
+                        onMouseLeave={() => setIsMobileUserMenuOpen(false)}
                     >
-                        <User size={24} />
-                    </button>
+                        <button
+                            className="mobile-user-toggle"
+                            onClick={toggleMobileUserMenu}
+                        >
+                            <User size={24} />
+                        </button>
+
+                        {isMobileUserMenuOpen && (
+                            <div className="mobile-user-dropdown" style={{ backgroundColor: '#101e33', border: `1px solid var(--color-neon-blue)` }}>
+                                <button onClick={handleLoginClick}>Login</button>
+                                <button onClick={handleSignupClick}>Signup</button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Mobile Main Menu Overlay (Links only) */}
+            {/* Mobile Main Menu Overlay (Links + Theme Toggle) */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: 'rgba(16, 30, 51, 0.98)' }}>
                 <div className="mobile-nav-links">
                     <button onClick={() => { setIsMenuOpen(false); handleScrollTo('home'); }}>Home</button>
@@ -157,14 +168,6 @@ const Navbar = ({ isDark, toggleTheme }) => {
                     <button onClick={() => { setIsMenuOpen(false); handleScrollTo('features'); }}>Features</button>
                 </div>
             </div>
-
-            {/* Mobile User Menu Overlay (Auth options) */}
-            {isMobileUserMenuOpen && (
-                <div className="mobile-user-dropdown" style={{ backgroundColor: '#101e33', border: `1px solid var(--color-neon-blue)` }}>
-                    <button onClick={handleLoginClick}>Login</button>
-                    <button onClick={handleSignupClick}>Signup</button>
-                </div>
-            )}
         </nav>
     );
 };
