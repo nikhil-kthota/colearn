@@ -11,6 +11,12 @@ import { useNavigate } from 'react-router-dom';
 const DashboardNavbar = ({ isDark, toggleTheme }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const navigate = useNavigate();
+    const handleScrollTo = (id) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     return (
         <nav className={`navbar dashboard-nav-container ${isDark ? 'dark' : 'light'}`}>
@@ -24,8 +30,8 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                 {/* Center: Desktop Links */}
                 <div className="desktop-actions">
                     <div className="nav-links">
-                        <button className="nav-link active">Collaborate</button>
-                        <button className="nav-link">My Rooms</button>
+                        <button className="nav-link active" onClick={() => navigate('/dashboard')}>Collaborate</button>
+                        <button className="nav-link" onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
                     </div>
 
                     {/* Actions: Theme Toggle + Profile Dropdown */}

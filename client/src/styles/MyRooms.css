@@ -1,0 +1,283 @@
+/* MyRooms.css */
+
+.my-rooms-section {
+    margin-top: 5rem;
+    padding-bottom: 4rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.section-title-small {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.view-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--color-neon-blue);
+    font-family: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.view-all-btn:hover {
+    transform: translateX(5px);
+}
+
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .rooms-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .rooms-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .my-rooms-section {
+        margin-top: 3rem;
+    }
+}
+
+.room-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* Title at bottom */
+    align-items: flex-start;
+    text-align: left;
+    aspect-ratio: 1 / 1;
+    padding: 2.2rem;
+    border-radius: 1.2rem;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    background-color: #080f1a;
+}
+
+[data-theme='light'] .room-card {
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Coding Room Style */
+.room-card.coding {
+    border: 2px solid var(--color-neon-blue);
+}
+
+.room-card.coding .room-name {
+    color: var(--color-neon-blue);
+}
+
+.room-card.coding .room-overlay {
+    background-color: var(--color-neon-blue);
+}
+
+/* Learning Room Style */
+.room-card.learning {
+    border: 2px solid var(--color-ocean-blue);
+}
+
+.room-card.learning .room-name {
+    color: var(--color-ocean-blue);
+}
+
+.room-card.learning .room-overlay {
+    background-color: var(--color-ocean-blue);
+}
+
+/* Content Wrapper */
+.room-content-wrapper {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.room-card:hover .room-content-wrapper {
+    transform: translateY(-15px);
+    /* Move title up on hover */
+}
+
+.room-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    transition: color 0.3s ease;
+}
+
+.room-card:hover .room-name {
+    color: inherit;
+    /* Title stays green/blue */
+}
+
+/* Details Reveal */
+.room-details {
+    margin-top: 1rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease 0.1s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.room-card:hover .room-details {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.meta-item {
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+}
+
+.room-card.coding .meta-item {
+    color: var(--color-neon-blue);
+}
+
+.room-card.learning .meta-item {
+    color: var(--color-ocean-blue);
+}
+
+/* Overlay Styling */
+.room-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 2;
+    transform: translateY(100%);
+    /* Slide from bottom */
+}
+
+.room-card:hover .room-overlay {
+    opacity: 0.2;
+    /* Similar to ActionTabs loading */
+    transform: translateY(0);
+}
+
+.room-card:hover {
+    transform: translateY(-8px);
+}
+
+.room-card.coding:hover {
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.25);
+}
+
+.room-card.learning:hover {
+    box-shadow: 0 15px 35px rgba(14, 165, 233, 0.25);
+}
+
+/* Dark Mode Overrides */
+[data-theme='dark'] .room-card {
+    background-color: #000000;
+}
+
+[data-theme='light'] .room-card {
+    border: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='light'] .room-card.coding {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-theme='light'] .room-card.learning {
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+[data-theme='light'] .room-card.coding:hover {
+    border-color: var(--color-neon-blue);
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15);
+}
+
+[data-theme='light'] .room-card.learning:hover {
+    border-color: var(--color-ocean-blue);
+    box-shadow: 0 15px 35px rgba(14, 165, 233, 0.15);
+}
+
+/* Type Badge */
+.room-type-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 4;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.room-card.coding .room-type-badge {
+    color: var(--color-neon-blue);
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.room-card.learning .room-type-badge {
+    color: var(--color-ocean-blue);
+    background-color: rgba(14, 165, 233, 0.1);
+    border-color: rgba(14, 165, 233, 0.2);
+}
+
+.room-card:hover .room-type-badge {
+    transform: translateY(-5px);
+}
+
+.room-card.coding:hover .room-type-badge {
+    color: var(--color-neon-blue);
+    background-color: #000000;
+    border-color: var(--color-neon-blue);
+}
+
+[data-theme='light'] .room-card.coding:hover .room-type-badge {
+    background-color: #ffffff;
+}
+
+.room-card.learning:hover .room-type-badge {
+    color: var(--color-ocean-blue);
+    background-color: #000000;
+    border-color: var(--color-ocean-blue);
+}
+
+[data-theme='light'] .room-card.learning:hover .room-type-badge {
+    background-color: #ffffff;
+}

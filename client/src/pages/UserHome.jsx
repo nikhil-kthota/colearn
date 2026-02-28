@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardNavbar from '../components/dashboard/DashboardNavbar';
 import ActionTabs from '../components/dashboard/ActionTabs';
 import ActionCard from '../components/dashboard/ActionCard';
+import MyRooms from '../components/dashboard/MyRooms';
 import '../styles/UserHome.css';
 
 const UserHome = ({ isDark, toggleTheme }) => {
@@ -90,6 +91,8 @@ const UserHome = ({ isDark, toggleTheme }) => {
                         onInputChange={handleInputChange}
                     />
                 </section>
+
+                <MyRooms />
             </main>
         </div>
     );

@@ -515,10 +515,14 @@
     opacity: 0.12;
 }
 
-[data-theme='dark'] .action-tab.active.coding .tab-progress-fill,
+[data-theme='dark'] .action-tab.active.coding .tab-progress-fill {
+    background-color: var(--color-neon-blue);
+    opacity: 0.2;
+}
+
 [data-theme='dark'] .action-tab.active.learning .tab-progress-fill {
-    background-color: var(--color-deep-blue);
-    opacity: 0.3;
+    background-color: var(--color-ocean-blue);
+    opacity: 0.2;
 }
 
 .action-tab.active.learning .tab-progress-fill {
