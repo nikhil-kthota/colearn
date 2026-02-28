@@ -7,6 +7,7 @@ const Profile = ({ isDark, toggleTheme }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Placeholder user data
     const [user, setUser] = useState({
@@ -49,6 +50,13 @@ const Profile = ({ isDark, toggleTheme }) => {
 
     const handleBannerEdit = () => {
         alert("Cover photo upload feature coming soon! (Supabase integration pending)");
+    };
+
+    const handleDeleteClick = () => setShowDeleteConfirm(true);
+    const handleCancelDelete = () => setShowDeleteConfirm(false);
+    const handleConfirmDelete = () => {
+        alert("Account deletion logic goes here (Supabase integration pending)");
+        setShowDeleteConfirm(false);
     };
 
     return (
@@ -223,12 +231,22 @@ const Profile = ({ isDark, toggleTheme }) => {
 
                         <div className="profile-card account-actions-card">
                             <h2>Account Settings</h2>
-                            <div className="action-list">
-                                <button className="action-item delete">
-                                    <Trash2 size={18} />
-                                    <span>Delete Account</span>
-                                </button>
-                            </div>
+                            {!showDeleteConfirm ? (
+                                <div className="action-list">
+                                    <button className="action-item delete" onClick={handleDeleteClick}>
+                                        <Trash2 size={18} />
+                                        <span>Delete Account</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="inline-delete-confirm">
+                                    <p className="delete-warning">Are you absolutely sure? This cannot be undone.</p>
+                                    <div className="confirm-actions">
+                                        <button className="confirm-btn cancel" onClick={handleCancelDelete}>Cancel</button>
+                                        <button className="confirm-btn confirm" onClick={handleConfirmDelete}>Confirm Delete</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -236,5 +254,6 @@ const Profile = ({ isDark, toggleTheme }) => {
         </div>
     );
 };
+
 
 export default Profile;
