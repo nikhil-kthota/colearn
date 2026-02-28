@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
 import UserHome from './pages/UserHome'
+import Profile from './pages/Profile'
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -22,6 +23,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<UserHome isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/profile" element={<Profile isDark={isDark} toggleTheme={toggleTheme} />} />
         </Routes>
       </div>
     </Router>

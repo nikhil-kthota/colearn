@@ -51,7 +51,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
 
                             {isProfileOpen && (
                                 <div className="profile-menu">
-                                    <button className="menu-item">
+                                    <button className="menu-item" onClick={() => navigate('/profile')}>
                                         <User size={16} />
                                         <span>Profile</span>
                                     </button>
