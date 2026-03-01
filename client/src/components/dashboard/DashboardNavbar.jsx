@@ -4,37 +4,62 @@ import {
     Sun,
     Moon,
     User,
-    LogOut
+    LogOut,
+    Menu,
+    X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardNavbar = ({ isDark, toggleTheme }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
     const navigate = useNavigate();
+
     const handleScrollTo = (id) => {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
+        setIsMenuOpen(false);
+    };
+
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+        if (isMobileProfileOpen) setIsMobileProfileOpen(false);
+    };
+
+    const toggleMobileProfile = () => {
+        setIsMobileProfileOpen(!isMobileProfileOpen);
+        if (isMenuOpen) setIsMenuOpen(false);
     };
 
     return (
         <nav className={`navbar dashboard-nav-container ${isDark ? 'dark' : 'light'}`}>
             <div className="navbar-container">
-                {/* Brand */}
+                {/* 1. Left: Brand */}
                 <div className="nav-brand" onClick={() => navigate('/dashboard')}>
                     <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
                     <span>CoLearn</span>
                 </div>
 
-                {/* Center: Desktop Links */}
+                {/* 2. Center: Mobile Menu Toggle (Hamburger) */}
+                <div className="mobile-center-controls">
+                    <button
+                        className="mobile-menu-toggle"
+                        onClick={toggleMenu}
+                    >
+                        {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                    </button>
+                </div>
+
+                {/* 3. Desktop Actions (Links + Actions) */}
                 <div className="desktop-actions">
                     <div className="nav-links">
                         <button className="nav-link active" onClick={() => navigate('/dashboard')}>Collaborate</button>
                         <button className="nav-link" onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
                     </div>
 
-                    {/* Actions: Theme Toggle + Profile Dropdown */}
                     <div className="nav-actions">
                         <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
                             {isDark ? <Sun size={20} /> : <Moon size={20} />}
@@ -45,7 +70,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                             onMouseEnter={() => setIsProfileOpen(true)}
                             onMouseLeave={() => setIsProfileOpen(false)}
                         >
-                            <div className="user-avatar-circle">
+                            <div className="user-avatar-circle" onClick={() => navigate('/profile')}>
                                 JD
                             </div>
 
@@ -65,9 +90,53 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                         </div>
                     </div>
                 </div>
+
+                {/* 4. Mobile Right Controls */}
+                <div className="mobile-right-controls">
+                    <button
+                        onClick={toggleTheme}
+                        className="theme-toggle"
+                        aria-label="Toggle Theme"
+                    >
+                        {isDark ? <Sun size={22} /> : <Moon size={22} />}
+                    </button>
+
+                    <div
+                        className="mobile-user-container"
+                        onMouseEnter={() => setIsMobileProfileOpen(true)}
+                        onMouseLeave={() => setIsMobileProfileOpen(false)}
+                    >
+                        <button
+                            className="mobile-user-toggle"
+                            onClick={toggleMobileProfile}
+                        >
+                            <div className="user-avatar-circle mini">JD</div>
+                        </button>
+
+                        {isMobileProfileOpen && (
+                            <div className="mobile-user-dropdown" style={{ backgroundColor: isDark ? '#080f1a' : '#ffffff', border: `1px solid var(--color-neon-blue)` }}>
+                                <button onClick={() => navigate('/profile')}>
+                                    <User size={16} style={{ marginRight: '8px' }} /> Profile
+                                </button>
+                                <button onClick={() => navigate('/')} className="logout" style={{ color: '#ef4444' }}>
+                                    <LogOut size={16} style={{ marginRight: '8px' }} /> Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Main Menu Overlay */}
+            <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: isDark ? 'rgba(8, 15, 26, 0.98)' : 'rgba(255, 255, 255, 0.98)' }}>
+                <div className="mobile-nav-links">
+                    <button onClick={() => { setIsMenuOpen(false); navigate('/dashboard'); }}>Collaborate</button>
+                    <button onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
+                </div>
             </div>
         </nav>
     );
 };
 
 export default DashboardNavbar;
+
