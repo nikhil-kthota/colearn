@@ -114,11 +114,11 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                         </button>
 
                         {isMobileProfileOpen && (
-                            <div className="mobile-user-dropdown" style={{ backgroundColor: isDark ? '#080f1a' : '#ffffff', border: `1px solid var(--color-neon-blue)` }}>
+                            <div className="mobile-user-dropdown">
                                 <button onClick={() => navigate('/profile')}>
                                     <User size={16} style={{ marginRight: '8px' }} /> Profile
                                 </button>
-                                <button onClick={() => navigate('/')} className="logout" style={{ color: '#ef4444' }}>
+                                <button onClick={() => navigate('/')} className="logout">
                                     <LogOut size={16} style={{ marginRight: '8px' }} /> Logout
                                 </button>
                             </div>
@@ -128,7 +128,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
             </div>
 
             {/* Mobile Main Menu Overlay */}
-            <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`} style={{ backgroundColor: isDark ? 'rgba(8, 15, 26, 0.98)' : 'rgba(255, 255, 255, 0.98)' }}>
+            <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-nav-links">
                     <button onClick={() => { setIsMenuOpen(false); navigate('/dashboard'); }}>Collaborate</button>
                     <button onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
