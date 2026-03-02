@@ -67,7 +67,7 @@ const UserHome = ({ isDark, toggleTheme }) => {
             />
 
             <main className="user-dashboard-content">
-                <section className="dashboard-hero">
+                <section className="dashboard-hero" id="dashboard-hero">
                     <div className="hero-text">
                         <h1>Welcome back, John!</h1>
                         <p>What would you like to build or learn today?</p>

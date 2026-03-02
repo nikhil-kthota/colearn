@@ -20,6 +20,14 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
         const element = document.getElementById(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            navigate('/dashboard');
+            setTimeout(() => {
+                const newElement = document.getElementById(id);
+                if (newElement) {
+                    newElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
         setIsMenuOpen(false);
     };
@@ -38,7 +46,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
         <nav className={`navbar dashboard-nav-container ${isDark ? 'dark' : 'light'}`}>
             <div className="navbar-container">
                 {/* 1. Left: Brand */}
-                <div className="nav-brand" onClick={() => navigate('/dashboard')}>
+                <div className="nav-brand" onClick={() => handleScrollTo('dashboard-hero')}>
                     <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
                     <span>CoLearn</span>
                 </div>
@@ -56,7 +64,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                 {/* 3. Desktop Actions (Links + Actions) */}
                 <div className="desktop-actions">
                     <div className="nav-links">
-                        <button className="nav-link active" onClick={() => navigate('/dashboard')}>Collaborate</button>
+                        <button className="nav-link active" onClick={() => handleScrollTo('dashboard-hero')}>Collaborate</button>
                         <button className="nav-link" onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
                     </div>
 
@@ -130,7 +138,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
             {/* Mobile Main Menu Overlay */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-nav-links">
-                    <button onClick={() => { setIsMenuOpen(false); navigate('/dashboard'); }}>Collaborate</button>
+                    <button onClick={() => handleScrollTo('dashboard-hero')}>Collaborate</button>
                     <button onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
                 </div>
             </div>
