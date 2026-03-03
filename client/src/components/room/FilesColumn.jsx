@@ -63,7 +63,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse }) => {
                             <FilePlus size={40} strokeWidth={1.5} />
                         </div>
                         <h3>No files yet</h3>
-                        <p>Upload files to start collaborating with your team.</p>
+                        <p>Upload files to start collaborating with others.</p>
 
                         <button className="upload-btn-primary" onClick={handleUploadClick}>
                             <Upload size={18} className="mr-2" />

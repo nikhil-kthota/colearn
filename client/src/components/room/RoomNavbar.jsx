@@ -23,14 +23,14 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
 
     return (
         <nav className="room-navbar">
-            <div className="room-nav-left">
-                <div className="room-nav-brand" onClick={() => navigate('/dashboard')}>
-                    <Leaf size={24} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
-                    <span>CoLearn</span>
-                </div>
+            <div className="room-nav-section-brand" onClick={() => navigate('/dashboard')}>
+                <Leaf size={24} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                <span>CoLearn</span>
+            </div>
 
+            <div className="room-nav-section-links">
                 <div
-                    className="room-nav-item-container"
+                    className="room-nav-item-container room-nav-section-members"
                     onMouseEnter={() => setIsMembersOpen(true)}
                     onMouseLeave={() => setIsMembersOpen(false)}
                 >
@@ -54,15 +54,17 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
                         </div>
                     )}
                 </div>
+
+                <div className="room-nav-section-chat">
+                    <div className="room-nav-item">Chat</div>
+                </div>
             </div>
 
             <div className="room-name-display">
                 {roomName.toUpperCase()}
             </div>
 
-            <div className="room-nav-right">
-                <div className="room-nav-item">Chat</div>
-
+            <div className="room-nav-section-actions">
                 <button className="theme-toggle room-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
                     {isDark ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
