@@ -11,10 +11,8 @@
     transition: all 0.5s ease;
 }
 
-/* Theme Colors */
 .home-hero {
     background-color: var(--color-neon-blue);
-    /* Universal Green background for Home */
 }
 
 [data-theme='light'] .home-hero {
@@ -25,11 +23,9 @@
     color: var(--color-black);
 }
 
-/* Subtitle - Positioned above Brand */
 .hero-top-info {
     position: absolute;
     bottom: 18.5rem;
-    /* Adjusted closer to the top of the 15rem brand text */
     left: 4.5rem;
     text-align: left;
     max-width: 800px;
@@ -44,7 +40,6 @@
     opacity: 0.9;
 }
 
-/* Brand - Bottom Left */
 .hero-main-brand {
     position: absolute;
     bottom: 5rem;
@@ -55,7 +50,6 @@
 
 .hero-company {
     font-size: 15rem;
-    /* Huge impact */
     font-weight: 800;
     margin: 0;
     line-height: 0.8;
@@ -63,17 +57,14 @@
     font-family: var(--font-display);
 }
 
-/* Side Info Box - Lowered */
 .hero-side-box {
     position: absolute;
     top: 25%;
-    /* Lowered from 10% */
     right: 5%;
     width: 320px;
     background-color: var(--color-deep-blue);
-    /* Blue box */
     padding: 2.5rem;
-    border-radius: 4px;
+    border-radius: 2rem;
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
     z-index: 10;
 }
@@ -131,7 +122,6 @@
         bottom: auto;
         left: auto;
         order: 1;
-        /* First: Subtitle */
         margin-bottom: 0.5rem;
     }
 
@@ -140,7 +130,6 @@
         bottom: auto;
         left: auto;
         order: 2;
-        /* Second: Brand */
         margin-bottom: 4rem;
     }
 
@@ -154,7 +143,6 @@
         right: auto;
         width: 100%;
         order: 3;
-        /* Third: Info Box */
         margin-bottom: 4rem;
     }
 

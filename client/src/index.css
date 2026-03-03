@@ -1,19 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Quicksand:wght@300..700&display=swap');
 
 :root {
-  /* Core Basics */
   --color-black: #080f1a;
   --color-white: #ffffff;
-
-  /* Palette */
   --color-deep-blue: #101e33;
-  /* Background Blue */
   --color-pale-blue: #e0faff;
-  /* Kept for subtle things if needed */
   --color-neon-blue: #10b981;
-  /* Accent Green */
   --color-ocean-blue: #0ea5e9;
-  /* Supporting Blue */
 
   --bg-primary: var(--color-deep-blue);
   --bg-card: rgba(255, 255, 255, 0.03);
@@ -52,7 +45,6 @@ html {
   scrollbar-color: var(--color-neon-blue) transparent;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -75,12 +67,10 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
-  /* Comfortaa for body text */
   transition: background-color var(--transition-speed), color var(--transition-speed);
   line-height: 1.6;
 }
 
-/* Typography Overrides */
 h1,
 h2,
 h3,
@@ -91,18 +81,14 @@ h6,
 .btn,
 .display-text {
   font-family: var(--font-display);
-  /* Quicksand for headings and UI elements */
   font-weight: 700;
   line-height: 1.2;
 }
 
-/* Specific Font Weights if needed */
 p {
   font-weight: 400;
-  /* Comfortaa tends to be rounded, ensure readability */
 }
 
-/* Utility Animations */
 .fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -119,7 +105,6 @@ p {
   }
 }
 
-/* Global Section Titles */
 .section-title {
   text-align: center;
   font-size: 3rem;

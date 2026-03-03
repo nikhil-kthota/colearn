@@ -1,5 +1,3 @@
-/* UserHome.css */
-
 .user-dashboard-wrapper {
     min-height: 100vh;
     width: 100%;
@@ -19,7 +17,6 @@
     --text-primary: #ffffff;
 }
 
-/* Dashboard Navbar Styling */
 .navbar.dashboard-nav-container {
     padding: 1.5rem 4rem;
     height: 80px;
@@ -52,13 +49,11 @@
 
 [data-theme='light'] .navbar.dashboard-nav-container {
     background-color: var(--color-neon-blue);
-    /* Green */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='dark'] .navbar.dashboard-nav-container {
     background-color: var(--color-deep-blue);
-    /* Blue */
     border-bottom: 1px solid rgba(16, 185, 129, 0.1);
 }
 
@@ -101,7 +96,6 @@
     gap: 3rem;
 }
 
-/* Dashboard Navbar Nav Links */
 .nav-links {
     display: flex;
     gap: 2.5rem;
@@ -343,7 +337,6 @@
     right: 0;
     width: 200px;
     background-color: white;
-    /* Light mode default */
     border-radius: 1rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     padding: 0.5rem;
@@ -353,7 +346,6 @@
     z-index: 1001;
 }
 
-/* Invisible bridge to prevent menu from closing when moving mouse from avatar to menu */
 .profile-menu::before {
     content: '';
     position: absolute;
@@ -385,7 +377,6 @@
     width: 100%;
 }
 
-/* Light Mode Menu Item */
 [data-theme='light'] .menu-item {
     color: var(--color-deep-blue);
 }
@@ -395,7 +386,6 @@
     color: white;
 }
 
-/* Dark Mode Menu Item */
 [data-theme='dark'] .menu-item {
     color: white;
 }
@@ -418,7 +408,6 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Logout Specific Styles */
 .menu-item.logout,
 .mobile-user-dropdown button.logout {
     color: #ef4444 !important;
@@ -570,12 +559,10 @@
 
 [data-theme='light'] .action-tab.active {
     color: #111827;
-    /* Darker text for active state */
 }
 
 [data-theme='dark'] .action-tab.active {
     color: #ffffff;
-    /* Brighter text for active state */
 }
 
 .tab-indicator-container {
@@ -659,7 +646,6 @@
     background-color: rgba(16, 30, 51, 0.2);
 }
 
-/* Main Action Card */
 .main-action-card {
     display: flex;
     flex-direction: column;
@@ -769,7 +755,6 @@
     border-radius: 100px;
     border: 1px solid rgba(128, 128, 128, 0.2);
     background: rgba(128, 128, 128, 0.05);
-    /* Added subtle background */
     color: var(--text-primary);
     font-family: var(--font-display);
     font-weight: 700;

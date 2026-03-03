@@ -1,5 +1,3 @@
-/* HowItWorks.css */
-
 .how-it-works-section {
     padding: 6rem 2rem;
     position: relative;
@@ -103,26 +101,21 @@
     margin-top: 1rem;
 }
 
-/* Heading Colors - Theme Dependent */
 .hiw-main-title,
 .hiw-right-header {
     color: var(--color-neon-blue);
-    /* Default for Dark Mode */
 }
 
 .hiw-step-item.active .hiw-step-header {
     color: var(--color-neon-blue);
-    /* Default for Dark Mode */
 }
 
 [data-theme='light'] .hiw-main-title,
 [data-theme='light'] .hiw-right-header,
 [data-theme='light'] .hiw-step-item.active .hiw-step-header {
     color: var(--color-deep-blue);
-    /* Blue for Light Mode */
 }
 
-/* Responsive */
 @media (max-width: 900px) {
     .how-it-works-section {
         padding: 4rem 1.5rem;
@@ -146,7 +139,6 @@
     .hiw-step-item {
         padding: 2rem 0;
         opacity: 1;
-        /* Always visible on mobile for simplicity */
     }
 
     .hiw-step-desc {
