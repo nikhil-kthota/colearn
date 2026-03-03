@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import RoomNavbar from '../components/room/RoomNavbar';
 import FilesColumn from '../components/room/FilesColumn';
@@ -8,6 +8,7 @@ import '../styles/Room.css';
 
 const Room = ({ isDark, toggleTheme }) => {
     const { id } = useParams();
+    const [isFilesCollapsed, setIsFilesCollapsed] = useState(false);
 
     // Simple placeholder logic for room names based on ID
     const roomNames = {
@@ -27,8 +28,11 @@ const Room = ({ isDark, toggleTheme }) => {
                 toggleTheme={toggleTheme}
             />
 
-            <main className="room-main-container">
-                <FilesColumn />
+            <main className={`room-main-container ${isFilesCollapsed ? 'files-collapsed' : ''}`}>
+                <FilesColumn
+                    isCollapsed={isFilesCollapsed}
+                    toggleCollapse={() => setIsFilesCollapsed(!isFilesCollapsed)}
+                />
                 <FileViewerColumn />
                 <AIAssistanceColumn />
             </main>

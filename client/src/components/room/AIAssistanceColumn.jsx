@@ -1,38 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Send, Bot } from 'lucide-react';
 
 const AIAssistanceColumn = () => {
+    const [message, setMessage] = useState('');
+
+    const handleSendMessage = (e) => {
+        e.preventDefault();
+        if (message.trim()) {
+            console.log("Sending to AI:", message);
+            setMessage('');
+        }
+    };
+
     return (
         <div className="room-column ai-column">
-            <div className="column-header">AI ASSISTANCE</div>
+            <div className="column-header flex-center">
+                <Bot size={16} className="mr-2" />
+                AI ASSISTANCE
+            </div>
             <div className="column-content">
-                <div style={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end'
-                }}>
-                    <div style={{
-                        padding: '1rem',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                        border: '1px solid rgba(16, 185, 129, 0.1)',
-                        fontSize: '0.9rem',
-                        lineHeight: '1.5',
-                        marginBottom: '1rem'
-                    }}>
+                <div className="ai-chat-container">
+                    <div className="ai-welcome-msg">
                         Hello! I'm your AI assistant. I can help you understand the code, debug issues, or suggest improvements.
                     </div>
-                    {/* Chat input placeholder */}
-                    <div style={{
-                        padding: '0.8rem 1rem',
-                        borderRadius: '25px',
-                        backgroundColor: 'rgba(128, 128, 128, 0.05)',
-                        border: '1px solid rgba(128, 128, 128, 0.1)',
-                        fontSize: '0.85rem',
-                        opacity: 0.6
-                    }}>
-                        Ask me anything...
-                    </div>
+
+                    <form className="ai-input-form" onSubmit={handleSendMessage}>
+                        <div className="ai-input-wrapper">
+                            <input
+                                type="text"
+                                className="ai-chat-input"
+                                placeholder="Ask me anything..."
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                            />
+                            <button type="submit" className="ai-send-btn" disabled={!message.trim()}>
+                                <Send size={18} />
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
