@@ -60,7 +60,7 @@
 .hero-side-box {
     position: absolute;
     top: 25%;
-    right: 5%;
+    right: 10%;
     width: 320px;
     background-color: var(--color-deep-blue);
     padding: 2.5rem;
