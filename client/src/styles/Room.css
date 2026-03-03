@@ -1,4 +1,3 @@
-/* Room.css */
 .room-layout {
     display: flex;
     flex-direction: column;
@@ -18,7 +17,8 @@
     color: var(--color-deep-blue);
 }
 
-/* Navbar */
+
+
 .room-navbar {
     display: flex;
     justify-content: space-between;
@@ -180,7 +180,8 @@
     }
 }
 
-/* Section actions alignment */
+
+
 
 .room-user-avatar {
     width: 36px;
@@ -228,7 +229,8 @@
     color: var(--color-deep-blue);
 }
 
-/* Base Dropdown */
+
+
 .room-dropdown {
     position: absolute;
     top: calc(100% + 5px);
@@ -258,7 +260,8 @@
     width: 200px;
 }
 
-/* Members Dropdown */
+
+
 .dropdown-header {
     padding: 0.8rem 1rem;
     font-family: var(--font-display);
@@ -312,7 +315,8 @@
     opacity: 0.6;
 }
 
-/* Profile Dropdown Items */
+
+
 .dropdown-item {
     display: flex;
     align-items: center;
@@ -351,7 +355,8 @@
     margin: 0.4rem 0.5rem;
 }
 
-/* Bridge for hover */
+
+
 .room-nav-item-container::after,
 .room-user-container::after {
     content: '';
@@ -362,7 +367,8 @@
     height: 10px;
 }
 
-/* Main Body */
+
+
 .room-main-container {
     display: grid;
     grid-template-columns: 300px 1fr 450px;
@@ -374,10 +380,11 @@
 }
 
 .room-main-container.files-collapsed {
-    grid-template-columns: 60px 1fr 450px;
+    grid-template-columns: 100px 1fr 450px;
 }
 
-/* Columns Base */
+
+
 .room-column {
     display: flex;
     flex-direction: column;
@@ -391,7 +398,7 @@
 
 [data-theme='light'] .room-column {
     background-color: rgba(14, 165, 233, 0.1);
-    border: 1px solid rgba(14, 165, 233, 0.15);
+    border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
 [data-theme='dark'] .room-column {
@@ -420,8 +427,8 @@
 }
 
 .files-column.collapsed .column-header {
-    padding: 1.25rem 0.5rem;
-    justify-content: center;
+    padding: 1.25rem 0.75rem;
+    justify-content: space-between;
 }
 
 .flex-column-center {
@@ -461,6 +468,10 @@
     background-color: rgba(128, 128, 128, 0.1);
 }
 
+.icon-mobile {
+    display: none;
+}
+
 [data-theme='light'] .column-header {
     color: var(--color-deep-blue);
     opacity: 0.9;
@@ -472,7 +483,8 @@
     overflow-y: auto;
 }
 
-/* Column Specific backgrounds removed - using base column style */
+
+
 .files-column,
 .viewer-column,
 .ai-column {
@@ -522,6 +534,10 @@
     background-color: rgba(128, 128, 128, 0.08);
 }
 
+[data-theme='light'] .ai-input-wrapper:focus-within {
+    border-color: #0ea5e9;
+}
+
 .ai-chat-input {
     flex: 1;
     background: transparent;
@@ -567,33 +583,18 @@
     background-color: rgba(128, 128, 128, 0.2);
 }
 
-/* Responsive */
+
+
 @media (max-width: 1024px) {
     .room-main-container {
         grid-template-columns: 250px 1fr 400px;
     }
 }
 
-@media (max-width: 768px) {
-    .room-main-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-        overflow-y: auto;
-    }
 
-    .room-column {
-        height: auto;
-        min-height: 200px;
-        border-right: none;
-        border-bottom: 1px solid rgba(128, 128, 128, 0.1);
-    }
 
-    .room-layout {
-        overflow-y: auto;
-    }
-}
 
-/* Files Empty State */
+
 .files-empty-state {
     height: 100%;
     display: flex;
@@ -668,4 +669,56 @@
 
 [data-theme='light'] .upload-btn-primary:hover {
     box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+}
+
+/* Mobile Stacking Overrides */
+@media (max-width: 900px) {
+
+    .room-main-container,
+    .room-main-container.files-collapsed {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        padding: 1.25rem !important;
+        overflow-y: visible !important;
+    }
+
+    .room-column {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 350px !important;
+        margin-bottom: 1.25rem !important;
+        border-right: none !important;
+    }
+
+    .files-column.collapsed {
+        min-height: 64px !important;
+        height: 64px !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .files-column.collapsed .column-header {
+        height: 100% !important;
+        padding: 0 1.5rem !important;
+        display: flex !important;
+        justify-content: space-between !important;
+    }
+
+    .viewer-column,
+    .ai-column {
+        min-height: 600px !important;
+    }
+
+    .room-layout {
+        overflow-y: auto !important;
+    }
+
+    .icon-desktop {
+        display: none !important;
+    }
+
+    .icon-mobile {
+        display: block !important;
+    }
 }

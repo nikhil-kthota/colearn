@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ChevronRight, ChevronLeft, FolderOpen, Upload, FilePlus } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus } from 'lucide-react';
 
 const FilesColumn = ({ isCollapsed, toggleCollapse }) => {
     const fileInputRef = useRef(null);
@@ -12,19 +12,16 @@ const FilesColumn = ({ isCollapsed, toggleCollapse }) => {
         const files = e.target.files;
         if (files.length > 0) {
             console.log("Selected files:", files);
-            // File upload logic will go here
+
         }
     };
 
     return (
         <div className={`room-column files-column ${isCollapsed ? 'collapsed' : ''}`}>
-            <div className={`column-header ${isCollapsed ? 'flex-column-center' : 'flex-between'}`}>
-                {!isCollapsed && (
-                    <div className="flex-center">
-                        <FolderOpen size={16} className="mr-2" />
-                        FILES
-                    </div>
-                )}
+            <div className={`column-header flex-between`}>
+                <div className="flex-center">
+                    FILES
+                </div>
 
                 <div className="header-actions flex-center">
                     {!isCollapsed && (
@@ -43,7 +40,17 @@ const FilesColumn = ({ isCollapsed, toggleCollapse }) => {
                         onMouseEnter={() => isCollapsed && toggleCollapse()}
                         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
-                        {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                        {isCollapsed ? (
+                            <>
+                                <ChevronRight size={18} className="icon-desktop" />
+                                <ChevronDown size={18} className="icon-mobile" />
+                            </>
+                        ) : (
+                            <>
+                                <ChevronLeft size={18} className="icon-desktop" />
+                                <ChevronUp size={18} className="icon-mobile" />
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

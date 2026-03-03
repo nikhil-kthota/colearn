@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Bot } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 const AIAssistanceColumn = () => {
     const [message, setMessage] = useState('');
@@ -15,7 +15,6 @@ const AIAssistanceColumn = () => {
     return (
         <div className="room-column ai-column">
             <div className="column-header flex-center">
-                <Bot size={16} className="mr-2" />
                 AI ASSISTANCE
             </div>
             <div className="column-content">

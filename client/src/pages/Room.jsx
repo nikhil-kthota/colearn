@@ -10,7 +10,7 @@ const Room = ({ isDark, toggleTheme }) => {
     const { id } = useParams();
     const [isFilesCollapsed, setIsFilesCollapsed] = useState(false);
 
-    // Simple placeholder logic for room names based on ID
+
     const roomNames = {
         '1': 'React Micro-Frontend',
         '2': 'System Design Patterns',

@@ -4,8 +4,7 @@ import {
     User,
     Sun,
     Moon,
-    LogOut,
-    Users
+    LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,7 +13,7 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
     const [isMembersOpen, setIsMembersOpen] = useState(false);
     const navigate = useNavigate();
 
-    // Placeholder members
+
     const members = [
         { id: 1, name: "John Doe (You)", role: "Admin" },
         { id: 2, name: "Alice Smith", role: "Editor" },
@@ -35,7 +34,6 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
                     onMouseLeave={() => setIsMembersOpen(false)}
                 >
                     <div className="room-nav-item flex-center">
-                        <Users size={16} className="mr-2" />
                         Members
                     </div>
 
