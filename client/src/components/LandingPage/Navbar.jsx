@@ -70,7 +70,7 @@ const Navbar = ({ isDark, toggleTheme }) => {
                 {/* 1. Left: Brand */}
                 <div className="nav-brand" onClick={() => handleScrollTo('home')}>
                     <img
-                        src={isDark ? "public/logo-dark.png" : "public/logo-dark.png"}
+                        src={`${import.meta.env.BASE_URL}${isDark ? "logo-dark.png" : "logo-light.png"}`}
                         alt="CoLearn Logo"
                         style={{ height: '28px', width: 'auto' }}
                     />

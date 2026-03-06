@@ -23,7 +23,7 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
         <nav className="room-navbar">
             <div className="room-nav-section-brand" onClick={() => navigate('/dashboard')}>
                 <img
-                    src={isDark ? "public/logo-dark.png" : "public/logo-light.png"}
+                    src={`${import.meta.env.BASE_URL}${isDark ? "logo-dark.png" : "logo-light.png"}`}
                     alt="CoLearn Logo"
                     style={{ height: '24px', width: 'auto' }}
                 />

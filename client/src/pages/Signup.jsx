@@ -22,7 +22,7 @@ const Signup = () => {
                 <div className="signup-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                         <img
-                            src="public/logo-dark.png"
+                            src={`${import.meta.env.BASE_URL}logo-dark.png`}
                             alt="CoLearn Logo"
                             style={{ height: '32px', width: 'auto' }}
                         />
