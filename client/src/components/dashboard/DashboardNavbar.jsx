@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    Leaf,
     Sun,
     Moon,
     User,
@@ -47,7 +46,11 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
             <div className="navbar-container">
                 {/* 1. Left: Brand */}
                 <div className="nav-brand" onClick={() => handleScrollTo('dashboard-hero')}>
-                    <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                    <img
+                        src={isDark ? "public/logo-dark.png" : "public/logo-light.png"}
+                        alt="CoLearn Logo"
+                        style={{ height: '28px', width: 'auto' }}
+                    />
                     <span>CoLearn</span>
                 </div>
 

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    Leaf,
     User,
     Sun,
     Moon,
@@ -23,7 +22,11 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
     return (
         <nav className="room-navbar">
             <div className="room-nav-section-brand" onClick={() => navigate('/dashboard')}>
-                <Leaf size={24} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                <img
+                    src={isDark ? "public/logo-dark.png" : "public/logo-light.png"}
+                    alt="CoLearn Logo"
+                    style={{ height: '24px', width: 'auto' }}
+                />
                 <span>CoLearn</span>
             </div>
 

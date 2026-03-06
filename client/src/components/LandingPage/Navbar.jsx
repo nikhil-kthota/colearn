@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Moon, Sun, Menu, X, User } from 'lucide-react';
+import { Moon, Sun, Menu, X, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Navbar.css';
 
@@ -69,7 +69,11 @@ const Navbar = ({ isDark, toggleTheme }) => {
             <div className="navbar-container">
                 {/* 1. Left: Brand */}
                 <div className="nav-brand" onClick={() => handleScrollTo('home')}>
-                    <Leaf size={28} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                    <img
+                        src={isDark ? "public/logo-dark.png" : "public/logo-dark.png"}
+                        alt="CoLearn Logo"
+                        style={{ height: '28px', width: 'auto' }}
+                    />
                     <span>CoLearn</span>
                 </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Leaf } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import '../styles/Signup.css';
 
 const Login = () => {
@@ -23,7 +23,11 @@ const Login = () => {
 
                 <div className="signup-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                        <Leaf size={32} color="var(--color-neon-blue)" fill="var(--color-neon-blue)" strokeWidth={0} />
+                        <img
+                            src="public/logo-dark.png"
+                            alt="CoLearn Logo"
+                            style={{ height: '32px', width: 'auto' }}
+                        />
                         <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-display)', color: 'var(--color-white)' }}>CoLearn</span>
                     </div>
                     <h1 className="signup-title">Welcome Back</h1>
