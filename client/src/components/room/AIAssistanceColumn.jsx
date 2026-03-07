@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Plus, ChevronUp, FileText, Cpu, Settings } from 'lucide-react';
+import { Send, Plus, ChevronUp, FileText, Cpu, Settings, ArrowLeft } from 'lucide-react';
 
 const AIAssistanceColumn = () => {
     const [message, setMessage] = useState('');
@@ -154,7 +154,14 @@ const AIAssistanceColumn = () => {
                                                     </>
                                                 ) : (
                                                     <div className="add-model-form" onClick={e => e.stopPropagation()}>
-                                                        <div className="menu-section-title">Add custom model</div>
+                                                        <div className="menu-form-header">
+                                                            <ArrowLeft
+                                                                size={16}
+                                                                className="menu-back-arrow"
+                                                                onClick={() => setIsAddingModel(false)}
+                                                            />
+                                                            <div className="menu-section-title">Add custom model</div>
+                                                        </div>
                                                         <div className="model-input-group">
                                                             <label>Model Name</label>
                                                             <input

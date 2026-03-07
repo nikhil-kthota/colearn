@@ -791,6 +791,35 @@
     padding: 0.5rem;
 }
 
+.menu-form-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.menu-back-arrow {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.2s;
+    color: var(--text-primary);
+}
+
+.menu-back-arrow:hover {
+    opacity: 1;
+    transform: translateX(-2px);
+    color: var(--color-neon-blue);
+}
+
+.menu-form-header .menu-section-title {
+    margin-bottom: 0;
+    padding-left: 0;
+}
+
+[data-theme='light'] .menu-back-arrow {
+    color: var(--color-deep-blue);
+}
+
 .model-input-group {
     display: flex;
     flex-direction: column;

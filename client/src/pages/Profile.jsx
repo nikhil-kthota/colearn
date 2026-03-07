@@ -1,31 +1,38 @@
 import React, { useState } from 'react';
-import { User, Mail, Calendar, Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Camera, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Profile.css';
 
 const Profile = ({ isDark, toggleTheme }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [showMainPassword, setShowMainPassword] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    // Model editing states
+    const [editingModelId, setEditingModelId] = useState(null);
+    const [editingModelData, setEditingModelData] = useState({ name: '', key: '' });
+    const [visibleModelIds, setVisibleModelIds] = useState(new Set());
 
     // Placeholder user data
     const [user, setUser] = useState({
         name: 'John Doe',
         email: 'john.doe@example.com',
-        password: 'password123',
+        password: 'securePassword123',
         joinedDate: 'January 2024',
         roomsCreated: 12,
         roomsJoined: 45,
         role: 'Full Stack Developer',
-        bio: 'Passionate about building collaborative tools and learning new technologies. Constantly exploring the world of micro-frontends and real-time systems.'
+        models: [
+            { id: 1, name: 'Gemini 3 Flash', key: 'AIzaSyBw-x8Y2z9A7v5u4t3x9Z' },
+            { id: 2, name: 'GPT-4o', key: 'sk-proj-r2v8c9d0f1g2h3j4k5l6m9Xq' }
+        ]
     });
 
     const [formData, setFormData] = useState({ ...user });
 
     const handleEditToggle = () => {
         if (isEditing) {
-            // Revert changes on cancel
             setFormData({ ...user });
         }
         setIsEditing(!isEditing);
@@ -44,18 +51,42 @@ const Profile = ({ isDark, toggleTheme }) => {
         }));
     };
 
-    const handleAvatarEdit = () => {
-        alert("Avatar upload feature coming soon! (Supabase integration pending)");
+    // Model handlers
+    const toggleModelVisibility = (id) => {
+        const newVisible = new Set(visibleModelIds);
+        if (newVisible.has(id)) newVisible.delete(id);
+        else newVisible.add(id);
+        setVisibleModelIds(newVisible);
     };
 
-    const handleBannerEdit = () => {
-        alert("Cover photo upload feature coming soon! (Supabase integration pending)");
+    const startEditingModel = (model) => {
+        setEditingModelId(model.id);
+        setEditingModelData({ name: model.name, key: model.key });
+    };
+
+    const cancelEditingModel = () => {
+        setEditingModelId(null);
+        setEditingModelData({ name: '', key: '' });
+    };
+
+    const saveModelEdit = (id) => {
+        setUser(prev => ({
+            ...prev,
+            models: prev.models.map(m =>
+                m.id === id ? { ...m, name: editingModelData.name, key: editingModelData.key } : m
+            )
+        }));
+        setEditingModelId(null);
+    };
+
+    const handleAvatarEdit = () => {
+        alert("Avatar upload feature coming soon!");
     };
 
     const handleDeleteClick = () => setShowDeleteConfirm(true);
     const handleCancelDelete = () => setShowDeleteConfirm(false);
     const handleConfirmDelete = () => {
-        alert("Account deletion logic goes here (Supabase integration pending)");
+        alert("Account deletion logic goes here");
         setShowDeleteConfirm(false);
     };
 
@@ -71,189 +102,200 @@ const Profile = ({ isDark, toggleTheme }) => {
             </button>
 
             <main className="profile-content">
-                <div className="profile-header-section">
-                    <div className="profile-banner">
-                        <button
-                            className="edit-banner-btn"
-                            aria-label="Edit cover photo"
-                            onClick={handleBannerEdit}
-                        >
-                            <Camera size={20} />
-                            <span>Edit Cover</span>
-                        </button>
-                    </div>
-                    <div className="profile-avatar-container">
-                        <div className="profile-avatar-large">
+                {/* Row 1: Profile Image and Details */}
+                <div className="profile-row profile-main-row">
+                    <div className="profile-avatar-column">
+                        <div className="profile-main-avatar">
                             {user.name.split(' ').map(n => n[0]).join('')}
+                            <button className="avatar-edit-overlay" onClick={handleAvatarEdit}>
+                                <Edit2 size={24} />
+                            </button>
                         </div>
-                        <button
-                            className="edit-avatar-btn"
-                            aria-label="Edit avatar"
-                            onClick={handleAvatarEdit}
-                        >
-                            <Camera size={18} />
-                        </button>
                     </div>
-                </div>
 
-                <div className="profile-grid">
-                    {/* Left Column: User Info */}
                     <div className={`profile-card info-card ${isEditing ? 'editing-active' : ''}`}>
                         <div className="card-header">
-                            <h2>Profile Information</h2>
+                            <h2>Profile Details</h2>
                             {!isEditing ? (
-                                <button className="icon-btn-small" onClick={handleEditToggle} aria-label="Edit profile">
+                                <button className="icon-btn-small" onClick={handleEditToggle}>
                                     <Edit2 size={16} />
                                 </button>
                             ) : (
                                 <div className="edit-actions">
-                                    <button className="icon-btn-small cancel" onClick={handleEditToggle} aria-label="Cancel editing">
+                                    <button className="icon-btn-small cancel" onClick={handleEditToggle}>
                                         <X size={16} />
                                     </button>
-                                    <button className="icon-btn-small save" onClick={handleSave} aria-label="Save changes">
+                                    <button className="icon-btn-small save" onClick={handleSave}>
                                         <Check size={16} />
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        <div className="info-list">
-                            <div className="info-item">
-                                <User className="info-icon" size={20} />
-                                <div className="info-text">
-                                    <label>Full Name</label>
+                        <div className="info-grid">
+                            <div className="info-group">
+                                <label>Full Name</label>
+                                {isEditing ? (
+                                    <input name="name" value={formData.name} onChange={handleChange} className="profile-input" />
+                                ) : (
+                                    <span>{user.name}</span>
+                                )}
+                            </div>
+                            <div className="info-group">
+                                <label>Email Address</label>
+                                <span>{user.email}</span>
+                            </div>
+                            <div className="info-group">
+                                <label>Joined Date</label>
+                                <span>{user.joinedDate}</span>
+                            </div>
+                            <div className="info-group">
+                                <label>Password</label>
+                                <div className="password-row">
                                     {isEditing ? (
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            className="profile-input"
-                                        />
+                                        <div className="password-edit-wrapper">
+                                            <input
+                                                type={showMainPassword ? "text" : "password"}
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                className="profile-input"
+                                            />
+                                            <button className="visibility-btn" onClick={() => setShowMainPassword(!showMainPassword)}>
+                                                {showMainPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
                                     ) : (
-                                        <span>{user.name}</span>
+                                        <div className="password-display">
+                                            <span>{showMainPassword ? user.password : '••••••••••••'}</span>
+                                            <button className="visibility-btn" onClick={() => setShowMainPassword(!showMainPassword)}>
+                                                {showMainPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                            <div className="info-item">
-                                <Calendar className="info-icon" size={20} />
-                                <div className="info-text">
-                                    <label>Joined</label>
-                                    <span>{user.joinedDate}</span>
-                                </div>
-                            </div>
-                            <div className="info-item">
-                                <Mail className="info-icon" size={20} />
-                                <div className="info-text">
-                                    <label>Email Address</label>
-                                    <span>{user.email}</span>
-                                </div>
-                            </div>
-                            <div className="info-item">
-                                <Shield className="info-icon" size={20} />
-                                <div className="info-text">
-                                    <label>Password</label>
-                                    <div className="password-display-wrapper">
-                                        {isEditing ? (
-                                            <div className="password-input-group">
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    name="password"
-                                                    value={formData.password}
-                                                    onChange={handleChange}
-                                                    className="profile-input"
-                                                />
-                                                <button
-                                                    className="password-toggle-btn inside"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    tabIndex="-1"
-                                                >
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="password-view-group">
-                                                <span className="password-dots">
-                                                    {showPassword ? user.password : "••••••••••••"}
-                                                </span>
-                                                <button
-                                                    className="password-toggle-btn"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                >
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="profile-bio">
-                            <div className="bio-header">
-                                <label>Bio</label>
-                                {isEditing && (
-                                    <span className={`char-count ${formData.bio.length >= 180 ? 'at-limit' : ''}`}>
-                                        {formData.bio.length}/180
-                                    </span>
-                                )}
-                            </div>
-                            {isEditing ? (
-                                <textarea
-                                    name="bio"
-                                    value={formData.bio}
-                                    onChange={handleChange}
-                                    className="profile-textarea"
-                                    rows="4"
-                                    maxLength="180"
-                                />
-                            ) : (
-                                <p>{user.bio}</p>
-                            )}
                         </div>
                     </div>
+                </div>
 
-                    {/* Right Column: Stats & Settings */}
-                    <div className="profile-right-column">
-                        <div className="profile-card stats-card">
+                {/* Row 2: Activity and Models */}
+                <div className="profile-row profile-secondary-row">
+                    <div className="profile-card stats-card">
+                        <div className="card-header">
+                            <Settings size={20} className="header-icon" />
                             <h2>Your Activity</h2>
-                            <div className="stats-grid">
-                                <div className="stat-item">
-                                    <span className="stat-value">{user.roomsCreated}</span>
-                                    <span className="stat-label">Rooms Created</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-value">{user.roomsJoined}</span>
-                                    <span className="stat-label">Rooms Joined</span>
-                                </div>
+                        </div>
+                        <div className="stats-list">
+                            <div className="stat-entry">
+                                <span className="stat-label">Rooms Created</span>
+                                <span className="stat-value">{user.roomsCreated}</span>
+                            </div>
+                            <div className="stat-entry">
+                                <span className="stat-label">Rooms Joined</span>
+                                <span className="stat-value">{user.roomsJoined}</span>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="profile-card account-actions-card">
-                            <h2>Account Settings</h2>
-                            {!showDeleteConfirm ? (
-                                <div className="action-list">
-                                    <button className="action-item delete" onClick={handleDeleteClick}>
-                                        <Trash2 size={18} />
-                                        <span>Delete Account</span>
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="inline-delete-confirm">
-                                    <p className="delete-warning">Are you absolutely sure? This cannot be undone.</p>
-                                    <div className="confirm-actions">
-                                        <button className="confirm-btn cancel" onClick={handleCancelDelete}>Cancel</button>
-                                        <button className="confirm-btn confirm" onClick={handleConfirmDelete}>Confirm Delete</button>
+                    <div className="profile-card models-card">
+                        <div className="card-header">
+                            <Shield size={20} className="header-icon" />
+                            <h2>My Models</h2>
+                        </div>
+                        <div className="models-list">
+                            {user.models.length > 0 ? (
+                                user.models.map(model => (
+                                    <div key={model.id} className={`model-entry ${editingModelId === model.id ? 'editing' : ''}`}>
+                                        <div className="model-info">
+                                            {editingModelId === model.id ? (
+                                                <div className="model-edit-fields">
+                                                    <input
+                                                        className="model-edit-input"
+                                                        value={editingModelData.name}
+                                                        onChange={e => setEditingModelData({ ...editingModelData, name: e.target.value })}
+                                                        placeholder="Model Name"
+                                                    />
+                                                    <div className="model-key-edit-wrapper">
+                                                        <input
+                                                            className="model-edit-input"
+                                                            type={visibleModelIds.has(model.id) ? "text" : "password"}
+                                                            value={editingModelData.key}
+                                                            onChange={e => setEditingModelData({ ...editingModelData, key: e.target.value })}
+                                                            placeholder="API Key"
+                                                        />
+                                                        <button
+                                                            className="visibility-btn small"
+                                                            onClick={() => toggleModelVisibility(model.id)}
+                                                        >
+                                                            {visibleModelIds.has(model.id) ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="model-name">{model.name}</span>
+                                                    <div className="model-key-row">
+                                                        <code className="model-key">
+                                                            {visibleModelIds.has(model.id) ? model.key : '••••••••••••••••'}
+                                                        </code>
+                                                        <button
+                                                            className="visibility-btn small"
+                                                            onClick={() => toggleModelVisibility(model.id)}
+                                                        >
+                                                            {visibleModelIds.has(model.id) ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="model-actions">
+                                            {editingModelId === model.id ? (
+                                                <>
+                                                    <button className="model-action-btn save" onClick={() => saveModelEdit(model.id)}>
+                                                        <Check size={14} />
+                                                    </button>
+                                                    <button className="model-action-btn cancel" onClick={cancelEditingModel}>
+                                                        <X size={14} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button className="model-settings-icon" onClick={() => startEditingModel(model)}>
+                                                    <Edit2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                ))
+                            ) : (
+                                <p className="empty-models">No models added yet.</p>
                             )}
                         </div>
                     </div>
+                </div>
+
+                {/* Row 3: Account Actions */}
+                <div className="profile-row profile-actions-row">
+                    {!showDeleteConfirm ? (
+                        <button className="delete-account-btn" onClick={handleDeleteClick}>
+                            <Trash2 size={18} />
+                            <span>Delete My Account</span>
+                        </button>
+                    ) : (
+                        <div className="delete-full-width-box">
+                            <div className="delete-content">
+                                <h3>This action is permanent. Do you wish to continue?</h3>
+                                <div className="confirm-btns">
+                                    <button className="confirm-btn cancel" onClick={handleCancelDelete}>No, Keep it</button>
+                                    <button className="confirm-btn confirm" onClick={handleConfirmDelete}>Yes, Delete Account</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
     );
 };
-
 
 export default Profile;
