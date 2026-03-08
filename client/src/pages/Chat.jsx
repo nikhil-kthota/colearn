@@ -247,7 +247,10 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <div className="active-chat-info">
                                 <span className="chat-title">{activeChat?.name}</span>
                                 <span className="member-count">
-                                    {members.map(m => m.name).join(', ')}
+                                    {activeChat?.type === 'group'
+                                        ? members.map(m => m.name).join(', ')
+                                        : members.find(m => m.id === activeChat?.memberId)?.status === 'online' ? 'Active now' : 'Offline'
+                                    }
                                 </span>
                             </div>
                         </div>
