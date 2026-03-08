@@ -5,9 +5,10 @@ import {
     Moon,
     LogOut
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
+    const { id } = useParams();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
     const navigate = useNavigate();
@@ -57,7 +58,12 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
                 </div>
 
                 <div className="room-nav-section-chat">
-                    <div className="room-nav-item">Chat</div>
+                    <div
+                        className="room-nav-item"
+                        onClick={() => navigate(`/room/${id}/chat`)}
+                    >
+                        Chat
+                    </div>
                 </div>
             </div>
 

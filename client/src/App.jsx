@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import UserHome from './pages/UserHome'
 import Profile from './pages/Profile'
 import Room from './pages/Room'
+import Chat from './pages/Chat'
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -26,6 +27,7 @@ function App() {
           <Route path="/dashboard" element={<UserHome isDark={isDark} toggleTheme={toggleTheme} />} />
           <Route path="/profile" element={<Profile isDark={isDark} toggleTheme={toggleTheme} />} />
           <Route path="/room/:id" element={<Room isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/room/:id/chat" element={<Chat isDark={isDark} toggleTheme={toggleTheme} />} />
         </Routes>
       </div>
     </Router>
