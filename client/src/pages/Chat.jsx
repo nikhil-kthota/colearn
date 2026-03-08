@@ -30,6 +30,10 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [attachedFile, setAttachedFile] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showFileSuggestions, setShowFileSuggestions] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showDMModal, setShowDMModal] = useState(false);
+    const [newChannelName, setNewChannelName] = useState('');
+    const [selectedMembers, setSelectedMembers] = useState([]);
     const chatEndRef = useRef(null);
     const imageInputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -146,6 +150,51 @@ const Chat = ({ isDark, toggleTheme }) => {
         }
     };
 
+    const handleCreateChannel = (e) => {
+        e.preventDefault();
+        if (newChannelName.trim()) {
+            const newId = newChannelName.toLowerCase().replace(/\s+/g, '-');
+            const newConv = {
+                id: newId,
+                name: newChannelName,
+                type: 'group',
+                icon: <Users size={18} />
+            };
+            setConversations([...conversations, newConv]);
+            setChatMessages({ ...chatMessages, [newId]: [] });
+            setActiveChatId(newId);
+            setNewChannelName('');
+            setSelectedMembers([]);
+            setShowCreateModal(false);
+        }
+    };
+
+    const handleStartDM = (member) => {
+        const existingDM = conversations.find(c => c.type === 'dm' && c.memberId === member.id);
+        if (existingDM) {
+            setActiveChatId(existingDM.id);
+        } else {
+            const newId = `dm-${member.id}`;
+            const newConv = {
+                id: newId,
+                name: member.name,
+                type: 'dm',
+                memberId: member.id,
+                icon: <User size={18} />
+            };
+            setConversations([...conversations, newConv]);
+            setActiveChatId(newId);
+        }
+        setShowDMModal(false);
+        setIsSidebarOpen(false);
+    };
+
+    const toggleMemberSelection = (id) => {
+        setSelectedMembers(prev =>
+            prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
+        );
+    };
+
     const parseMentions = (text) => {
         return text.split(' ').map((word, i) => {
             if (word.startsWith('@')) return <span key={i} className="mention-user">{word} </span>;
@@ -179,7 +228,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                     <div className="sidebar-section">
                         <div className="section-header">
                             <span>CHANNELS</span>
-                            <Plus size={14} className="add-icon" />
+                            <Plus size={14} className="add-icon" onClick={() => setShowCreateModal(true)} />
                         </div>
                         <div className="nav-list">
                             {conversations.filter(c => c.type === 'group').map(conv => (
@@ -198,7 +247,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                     <div className="sidebar-section">
                         <div className="section-header">
                             <span>DIRECT MESSAGES</span>
-                            <Plus size={14} className="add-icon" />
+                            <Plus size={14} className="add-icon" onClick={() => setShowDMModal(true)} />
                         </div>
                         <div className="nav-list">
                             {conversations.filter(c => c.type === 'dm').map(conv => (
@@ -367,6 +416,79 @@ const Chat = ({ isDark, toggleTheme }) => {
                     </footer>
                 </section>
             </main>
+
+            {/* Create Channel Modal */}
+            {showCreateModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content glass-morphism fade-in">
+                        <div className="modal-header">
+                            <h3>Create New Channel</h3>
+                            <button className="close-modal" onClick={() => setShowCreateModal(false)}><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleCreateChannel}>
+                            <div className="form-group">
+                                <label>Channel Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Frontend Squad"
+                                    value={newChannelName}
+                                    onChange={(e) => setNewChannelName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Add Members</label>
+                                <div className="members-selection-list">
+                                    {members.filter(m => m.id !== 1).map(member => (
+                                        <div
+                                            key={member.id}
+                                            className={`member-select-item ${selectedMembers.includes(member.id) ? 'selected' : ''}`}
+                                            onClick={() => toggleMemberSelection(member.id)}
+                                        >
+                                            <div className="member-avatar-mini" style={{ backgroundColor: member.color }}>{member.avatar}</div>
+                                            <span>{member.name}</span>
+                                            <div className="checkbox-custom">
+                                                {selectedMembers.includes(member.id) && <div className="checked-indicator"></div>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn-secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
+                                <button type="submit" className="btn-primary" disabled={!newChannelName.trim()}>Create Channel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Start DM Modal */}
+            {showDMModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content glass-morphism fade-in member-select-modal">
+                        <div className="modal-header">
+                            <h3>Direct Message</h3>
+                            <button className="close-modal" onClick={() => setShowDMModal(false)}><X size={20} /></button>
+                        </div>
+                        <div className="search-members-box">
+                            <Search size={16} />
+                            <input type="text" placeholder="Search members..." />
+                        </div>
+                        <div className="modal-scroll-list">
+                            {members.filter(m => m.id !== 1).map(member => (
+                                <div key={member.id} className="dm-select-item" onClick={() => handleStartDM(member)}>
+                                    <div className="member-avatar" style={{ backgroundColor: member.color }}>{member.avatar}</div>
+                                    <div className="dm-item-info">
+                                        <span className="dm-name">{member.name}</span>
+                                    </div>
+                                    <MessageSquare size={16} className="dm-icon-hint" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
