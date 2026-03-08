@@ -581,6 +581,21 @@
     cursor: not-allowed;
 }
 
+/* Emoji Picker Container */
+.emoji-picker-container {
+    position: absolute;
+    bottom: calc(100% + 1rem);
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+[data-theme='light'] .emoji-picker-container {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
 /* File Suggestions Popup */
 .file-suggestions-popup {
     position: absolute;

@@ -641,24 +641,33 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background-color: rgba(128, 128, 128, 0.1);
-    color: var(--text-primary);
+    background-color: var(--color-neon-blue);
+    color: black;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
 }
 
-.ai-send-circle:hover:not(:disabled) {
-    background-color: var(--color-neon-blue);
+[data-theme='light'] .ai-send-circle {
+    background-color: var(--color-ocean-blue);
     color: white;
 }
 
+.ai-send-circle:hover:not(:disabled) {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
 .ai-send-circle:disabled {
-    opacity: 0.3;
+    opacity: 0.2;
+    background-color: rgba(128, 128, 128, 0.1);
+    color: var(--text-primary);
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .menu-section-divider {
@@ -1027,4 +1036,67 @@
     .icon-mobile {
         display: block !important;
     }
+}
+
+/* AI Assistance Preview Styles */
+.ai-preview-container {
+    padding: 2px 2px;
+    margin-bottom: 4px;
+}
+
+.ai-image-preview {
+    position: relative;
+    width: fit-content;
+}
+
+.ai-image-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.ai-file-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(128, 128, 128, 0.1);
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    width: fit-content;
+    border: 1px solid rgba(128, 128, 128, 0.05);
+}
+
+[data-theme='light'] .ai-file-preview {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.remove-ai-attach {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.ai-file-preview .remove-ai-attach {
+    position: static;
+    background: transparent;
+    color: #666;
+    margin-left: 0.5rem;
+}
+
+[data-theme='light'] .remove-ai-attach {
+    color: #475569;
 }

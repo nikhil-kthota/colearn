@@ -19,6 +19,7 @@ import {
     FileImage,
     Menu
 } from 'lucide-react';
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 import RoomNavbar from '../components/room/RoomNavbar';
 import '../styles/Chat.css';
 
@@ -30,6 +31,7 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [attachedFile, setAttachedFile] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showFileSuggestions, setShowFileSuggestions] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDMModal, setShowDMModal] = useState(false);
     const [newChannelName, setNewChannelName] = useState('');
@@ -194,6 +196,23 @@ const Chat = ({ isDark, toggleTheme }) => {
             prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
         );
     };
+
+    const handlePaste = (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => setAttachedImage(event.target.result);
+                reader.readAsDataURL(blob);
+            }
+        }
+    };
+
+    const addEmoji = (emojiData) => {
+        setMessage(prev => prev + emojiData.emoji);
+    };
+
 
     const parseMentions = (text) => {
         return text.split(' ').map((word, i) => {
@@ -375,6 +394,27 @@ const Chat = ({ isDark, toggleTheme }) => {
                         )}
                         <form className="composer-container" onSubmit={handleSendMessage}>
                             <div className="composer-actions">
+                                <button
+                                    type="button"
+                                    className={`action-btn ${showEmojiPicker ? 'active' : ''}`}
+                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                >
+                                    <Smile size={20} />
+                                </button>
+                                {showEmojiPicker && (
+                                    <div className="emoji-picker-container fade-in">
+                                        <EmojiPicker
+                                            onEmojiClick={addEmoji}
+                                            theme={isDark ? Theme.DARK : Theme.LIGHT}
+                                            width={350}
+                                            height={450}
+                                            lazyLoadEmojis={true}
+                                            skinTonesDisabled={true}
+                                            searchPlaceHolder="Search emojis..."
+                                            previewConfig={{ showPreview: false }}
+                                        />
+                                    </div>
+                                )}
                                 <button type="button" className="action-btn" onClick={() => imageInputRef.current?.click()}>
                                     <ImageIcon size={20} />
                                 </button>
@@ -389,6 +429,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                                 placeholder={`Message ${activeChat?.name}... (type @ for files)`}
                                 value={message}
                                 onChange={handleInputChange}
+                                onPaste={handlePaste}
                             />
 
                             <input
@@ -407,7 +448,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                             />
 
                             <div className="composer-actions right">
-                                <button type="button" className="action-btn"><Smile size={20} /></button>
                                 <button type="submit" className="send-trigger" disabled={!message.trim() && !attachedImage && !attachedFile}>
                                     <Send size={18} />
                                 </button>

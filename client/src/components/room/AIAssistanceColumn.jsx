@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Send, Plus, ChevronUp, FileText, Cpu, Settings, ArrowLeft } from 'lucide-react';
+import { Send, Plus, ChevronUp, FileText, Cpu, ArrowLeft, Image as ImageIcon, Paperclip, X } from 'lucide-react';
+import { useRef } from 'react';
 
 const AIAssistanceColumn = () => {
     const [message, setMessage] = useState('');
@@ -9,6 +10,11 @@ const AIAssistanceColumn = () => {
     const [newModelData, setNewModelData] = useState({ name: '', key: '' });
     const [selectedModel, setSelectedModel] = useState('Gemini 3 Flash');
     const [models, setModels] = useState(['Gemini 3 Flash', 'GPT-4o', 'Claude 3.5 Sonnet']);
+    const [attachedImage, setAttachedImage] = useState(null);
+    const [attachedFile, setAttachedFile] = useState(null);
+
+    const imageInputRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const mockFiles = [
         { id: 1, name: 'main.jsx' },
@@ -18,11 +24,44 @@ const AIAssistanceColumn = () => {
 
     const handleSendMessage = (e) => {
         if (e) e.preventDefault();
-        if (message.trim()) {
-            console.log(`Sending to ${selectedModel}:`, message);
+        if (message.trim() || attachedImage || attachedFile) {
+            console.log(`Sending to ${selectedModel}:`, { text: message, image: !!attachedImage, file: attachedFile?.name });
             setMessage('');
+            setAttachedImage(null);
+            setAttachedFile(null);
             setIsMenuOpen(false);
             setIsModelMenuOpen(false);
+        }
+    };
+
+    const handlePaste = (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => setAttachedImage(event.target.result);
+                reader.readAsDataURL(blob);
+            }
+        }
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => setAttachedImage(event.target.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAttachedFile({
+                name: file.name,
+                size: (file.size / 1024).toFixed(1) + ' KB'
+            });
         }
     };
 
@@ -58,49 +97,85 @@ const AIAssistanceColumn = () => {
                     <form className="ai-input-form" onSubmit={handleSendMessage}>
                         <div className="ai-input-wrapper">
                             {/* Text Area Input */}
+                            {attachedImage && (
+                                <div className="ai-preview-container">
+                                    <div className="ai-image-preview">
+                                        <img src={attachedImage} alt="Preview" />
+                                        <button className="remove-ai-attach" onClick={() => setAttachedImage(null)}><X size={12} /></button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {attachedFile && (
+                                <div className="ai-preview-container">
+                                    <div className="ai-file-preview">
+                                        <FileText size={14} />
+                                        <span>{attachedFile.name}</span>
+                                        <button className="remove-ai-attach" onClick={() => setAttachedFile(null)}><X size={12} /></button>
+                                    </div>
+                                </div>
+                            )}
+
                             <textarea
                                 className="ai-chat-textarea"
                                 placeholder="Ask anything, @ to mention, / for workflows"
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 onKeyDown={handleKeyDown}
+                                onPaste={handlePaste}
                             />
 
                             {/* Toolbar row */}
                             <div className="ai-input-toolbar">
                                 <div className="toolbar-left">
-                                    {/* + Button and Menu */}
-                                    <div style={{ position: 'relative' }}>
-                                        <Plus
-                                            size={20}
-                                            className="toolbar-plus"
-                                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                        />
+                                    {/* Toolbar icons */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                            <Plus
+                                                size={20}
+                                                className="toolbar-plus"
+                                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                            />
 
-                                        {isMenuOpen && (
-                                            <div className="ai-context-menu">
-                                                <div className="menu-section">
-                                                    <div className="menu-section-title">Reference Files</div>
-                                                    <div className="menu-list">
-                                                        {mockFiles.map(file => (
-                                                            <button
-                                                                key={file.id}
-                                                                type="button"
-                                                                className="menu-option"
-                                                                onClick={() => {
-                                                                    setMessage(prev => prev + ` @${file.name} `);
-                                                                    setIsMenuOpen(false);
-                                                                }}
-                                                            >
-                                                                <FileText size={14} />
-                                                                {file.name}
-                                                            </button>
-                                                        ))}
+                                            {isMenuOpen && (
+                                                <div className="ai-context-menu">
+                                                    <div className="menu-section">
+                                                        <div className="menu-section-title">Reference Files</div>
+                                                        <div className="menu-list">
+                                                            {mockFiles.map(file => (
+                                                                <button
+                                                                    key={file.id}
+                                                                    type="button"
+                                                                    className="menu-option"
+                                                                    onClick={() => {
+                                                                        setMessage(prev => prev + ` @${file.name} `);
+                                                                        setIsMenuOpen(false);
+                                                                    }}
+                                                                >
+                                                                    <FileText size={14} />
+                                                                    {file.name}
+                                                                </button>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+
+                                        <ImageIcon
+                                            size={20}
+                                            className="toolbar-plus"
+                                            onClick={() => imageInputRef.current.click()}
+                                        />
+                                        <Paperclip
+                                            size={20}
+                                            className="toolbar-plus"
+                                            onClick={() => fileInputRef.current.click()}
+                                        />
                                     </div>
+
+                                    <input type="file" ref={imageInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleImageUpload} />
+                                    <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
 
                                     {/* Model Selector */}
                                     <div style={{ position: 'relative' }}>
@@ -197,7 +272,7 @@ const AIAssistanceColumn = () => {
                                 </div>
 
                                 <div className="toolbar-right">
-                                    <button type="submit" className="ai-send-circle" disabled={!message.trim()}>
+                                    <button type="submit" className="ai-send-circle" disabled={!message.trim() && !attachedImage && !attachedFile}>
                                         <Send size={16} />
                                     </button>
                                 </div>
