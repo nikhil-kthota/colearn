@@ -92,7 +92,6 @@
     gap: 1.5rem;
 }
 
-/* Theme Toggle */
 .theme-toggle {
     background: none;
     border: none;
@@ -111,7 +110,6 @@
     color: var(--color-neon-blue);
 }
 
-/* Auth Buttons */
 .btn-login {
     background: transparent;
     border: 2px solid var(--color-white);
@@ -121,7 +119,7 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: var(--color-white);
+    color: #ffffff !important;
 }
 
 .btn-login:hover {
@@ -131,7 +129,7 @@
 
 .btn-signup {
     background-color: var(--color-neon-blue);
-    color: var(--color-white);
+    color: #ffffff !important;
     border: none;
     padding: 0.7rem 1.5rem;
     border-radius: 100px;
@@ -146,7 +144,13 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
-/* Mobile Controls */
+/* Ensure visibility in Light Mode on the dark navbar */
+[data-theme='light'] .navbar .btn-login,
+[data-theme='light'] .navbar .btn-signup,
+[data-theme='light'] .navbar .mobile-menu-toggle {
+    color: #ffffff !important;
+}
+
 .mobile-center-controls,
 .mobile-right-controls,
 .mobile-user-dropdown,
@@ -154,7 +158,6 @@
     display: none;
 }
 
-/* RESPONSIVE DESIGN */
 @media (max-width: 900px) {
     .navbar {
         padding: 1rem 2rem;
@@ -190,7 +193,7 @@
         border: none;
         cursor: pointer;
         padding: 0.5rem;
-        color: var(--color-white);
+        color: #ffffff !important;
     }
 
     .mobile-menu-overlay {
