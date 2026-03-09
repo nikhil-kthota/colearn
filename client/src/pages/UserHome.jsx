@@ -60,7 +60,7 @@ const UserHome = ({ isDark, toggleTheme }) => {
     };
 
     return (
-        <div className="user-dashboard-wrapper">
+        <div className="user-dashboard-wrapper" data-theme={isDark ? 'dark' : 'light'}>
             <DashboardNavbar
                 isDark={isDark}
                 toggleTheme={toggleTheme}

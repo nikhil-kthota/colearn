@@ -762,11 +762,11 @@
         padding: 1.5rem 0.5rem;
     }
 
-    .section-header,
-    .sidebar-section>span:not(.add-icon),
-    .mini-file-list,
-    .nav-item span,
-    .member-count {
+    .chat-nav-sidebar .section-header,
+    .chat-nav-sidebar .sidebar-section>span:not(.add-icon),
+    .chat-nav-sidebar .mini-file-list,
+    .chat-nav-sidebar .nav-item span,
+    .chat-nav-sidebar .member-count {
         display: none !important;
     }
 

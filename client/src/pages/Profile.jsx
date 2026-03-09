@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Profile.css';
 
@@ -12,7 +12,10 @@ const Profile = ({ isDark, toggleTheme }) => {
     // Model editing states
     const [editingModelId, setEditingModelId] = useState(null);
     const [editingModelData, setEditingModelData] = useState({ name: '', key: '' });
+    const [isAddingModel, setIsAddingModel] = useState(false);
+    const [newModelData, setNewModelData] = useState({ name: '', key: '' });
     const [visibleModelIds, setVisibleModelIds] = useState(new Set());
+    const [showNewModelKey, setShowNewModelKey] = useState(false);
 
     // Placeholder user data
     const [user, setUser] = useState({
@@ -77,6 +80,34 @@ const Profile = ({ isDark, toggleTheme }) => {
             )
         }));
         setEditingModelId(null);
+    };
+
+    const handleAddModel = () => {
+        if (!newModelData.name.trim() || !newModelData.key.trim()) return;
+
+        const newModel = {
+            id: Date.now(),
+            name: newModelData.name,
+            key: newModelData.key
+        };
+
+        setUser(prev => ({
+            ...prev,
+            models: [newModel, ...prev.models]
+        }));
+
+        setNewModelData({ name: '', key: '' });
+        setIsAddingModel(false);
+        setShowNewModelKey(false);
+    };
+
+    const handleDeleteModel = (id) => {
+        if (window.confirm("Are you sure you want to delete this model?")) {
+            setUser(prev => ({
+                ...prev,
+                models: prev.models.filter(m => m.id !== id)
+            }));
+        }
     };
 
     const handleAvatarEdit = () => {
@@ -202,8 +233,47 @@ const Profile = ({ isDark, toggleTheme }) => {
                         <div className="card-header">
                             <Shield size={20} className="header-icon" />
                             <h2>My Models</h2>
+                            <button className="add-model-btn" onClick={() => setIsAddingModel(true)} title="Add New Model">
+                                <Plus size={20} />
+                            </button>
                         </div>
                         <div className="models-list">
+                            {isAddingModel && (
+                                <div className="model-entry adding">
+                                    <div className="model-edit-fields">
+                                        <input
+                                            className="model-edit-input"
+                                            value={newModelData.name}
+                                            onChange={e => setNewModelData({ ...newModelData, name: e.target.value })}
+                                            placeholder="Model Name (e.g. Gemini 1.5 Pro)"
+                                            autoFocus
+                                        />
+                                        <div className="model-key-edit-wrapper">
+                                            <input
+                                                className="model-edit-input"
+                                                type={showNewModelKey ? "text" : "password"}
+                                                value={newModelData.key}
+                                                onChange={e => setNewModelData({ ...newModelData, key: e.target.value })}
+                                                placeholder="API Key"
+                                            />
+                                            <button
+                                                className="visibility-btn small"
+                                                onClick={() => setShowNewModelKey(!showNewModelKey)}
+                                            >
+                                                {showNewModelKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="model-actions">
+                                        <button className="model-action-btn save" onClick={handleAddModel}>
+                                            <Check size={14} />
+                                        </button>
+                                        <button className="model-action-btn cancel" onClick={() => setIsAddingModel(false)}>
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             {user.models.length > 0 ? (
                                 user.models.map(model => (
                                     <div key={model.id} className={`model-entry ${editingModelId === model.id ? 'editing' : ''}`}>
@@ -260,9 +330,14 @@ const Profile = ({ isDark, toggleTheme }) => {
                                                     </button>
                                                 </>
                                             ) : (
-                                                <button className="model-settings-icon" onClick={() => startEditingModel(model)}>
-                                                    <Edit2 size={14} />
-                                                </button>
+                                                <div className="model-static-actions">
+                                                    <button className="model-settings-icon" onClick={() => startEditingModel(model)} title="Edit Model">
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                    <button className="model-settings-icon delete" onClick={() => handleDeleteModel(model.id)} title="Delete Model">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

@@ -312,6 +312,30 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    max-height: 232px;
+    /* Set to fit exactly two model entries comfortable */
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar for Models List */
+.models-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.models-list::-webkit-scrollbar-track {
+    background: rgba(128, 128, 128, 0.05);
+    border-radius: 10px;
+}
+
+.models-list::-webkit-scrollbar-thumb {
+    background: var(--color-neon-blue);
+    border-radius: 10px;
+    opacity: 0.5;
+}
+
+.models-list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ocean-blue);
 }
 
 .model-entry {
@@ -343,6 +367,34 @@
 
 [data-theme='light'] .model-name {
     color: #0f172a;
+}
+
+.add-model-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: var(--color-neon-blue);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-model-btn:hover {
+    background: var(--color-neon-blue);
+    color: black;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.model-entry.adding {
+    border: 2px dashed var(--color-neon-blue);
+    background: rgba(16, 185, 129, 0.05);
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .model-info {
@@ -404,6 +456,12 @@
     border-color: var(--color-neon-blue);
 }
 
+[data-theme='light'] .model-edit-input {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
 .model-key-edit-wrapper {
     display: flex;
     align-items: center;
@@ -448,6 +506,16 @@
     opacity: 1;
     background: rgba(128, 128, 128, 0.1);
     color: var(--color-neon-blue);
+}
+
+.model-settings-icon.delete:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.model-static-actions {
+    display: flex;
+    gap: 0.4rem;
 }
 
 .model-action-btn.save {

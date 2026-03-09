@@ -445,7 +445,7 @@
 }
 
 .dashboard-hero {
-    margin-bottom: 4rem;
+    padding-bottom: 6rem;
 }
 
 .hero-text {
@@ -474,13 +474,14 @@
     }
 
     .dashboard-hero {
-        margin-bottom: 2.5rem;
+        padding-bottom: 4rem;
     }
 }
 
 /* Dashboard Actions (Tabs) */
 .dashboard-actions-section {
     width: 100%;
+    margin-top: 2rem;
 }
 
 .action-tabs {

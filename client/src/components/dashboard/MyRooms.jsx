@@ -1,10 +1,12 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/MyRooms.css';
 
 const MyRooms = () => {
     const navigate = useNavigate();
+    const [showAll, setShowAll] = React.useState(false);
+
     // Placeholder data
     const rooms = [
         {
@@ -34,8 +36,17 @@ const MyRooms = () => {
             type: 'learning',
             members: 15,
             lastUsed: 'Just now'
+        },
+        {
+            id: '5',
+            name: 'Full Stack Development',
+            type: 'coding',
+            members: 20,
+            lastUsed: 'Yesterday'
         }
     ];
+
+    const displayedRooms = showAll ? rooms : rooms.slice(0, 4);
 
     const handleRoomClick = (room) => {
         navigate(`/room/${room.id}`);
@@ -45,16 +56,25 @@ const MyRooms = () => {
         <section className="my-rooms-section" id="my-rooms-section">
             <div className="section-header">
                 <h2 className="section-title-small">My Rooms</h2>
-                <button className="view-all-btn">
-                    View All <ArrowRight size={16} />
-                </button>
+                {rooms.length > 4 && (
+                    <button className="view-all-btn" onClick={() => setShowAll(!showAll)}>
+                        {showAll ? 'Show Less' : 'View All'}
+                        <ChevronDown
+                            size={16}
+                            style={{
+                                transform: showAll ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }}
+                        />
+                    </button>
+                )}
             </div>
 
             <div className="rooms-grid">
-                {rooms.map((room) => (
+                {displayedRooms.map((room) => (
                     <div
                         key={room.id}
-                        className={`room-card ${room.type}`}
+                        className={`room-card ${room.type} fade-in`}
                         onClick={() => handleRoomClick(room)}
                     >
                         <div className="room-type-badge">
