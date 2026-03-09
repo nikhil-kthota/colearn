@@ -1,7 +1,21 @@
 import React from 'react';
 import { Plus, LogIn, Code2, BookOpen, AlertCircle } from 'lucide-react';
 
+const COLLAB_CODING_URL = 'http://localhost:5174';
+
 const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formData, onInputChange }) => {
+    const handleCodingCreate = () => {
+        const { roomId, roomName } = formData.create;
+        const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(roomName)}&creating=true`;
+        window.open(url, '_blank');
+    };
+
+    const handleCodingJoin = () => {
+        const { roomId } = formData.join;
+        const savedName = localStorage.getItem('userName') || 'User';
+        const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
+        window.open(url, '_blank');
+    };
     return (
         <div className="main-action-card">
             <div className="card-left">
@@ -106,6 +120,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             <button
                                 className="submit-action-btn"
                                 disabled={!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)}
+                                onClick={activeTab === 'coding' ? handleCodingCreate : undefined}
                                 style={{
                                     opacity: (!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 0.4 : 1,
                                     cursor: (!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 'not-allowed' : 'pointer'
@@ -172,6 +187,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             <button
                                 className="submit-action-btn"
                                 disabled={!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)}
+                                onClick={activeTab === 'coding' ? handleCodingJoin : undefined}
                                 style={{
                                     opacity: (!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 0.4 : 1,
                                     cursor: (!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 'not-allowed' : 'pointer'
