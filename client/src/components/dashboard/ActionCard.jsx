@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, LogIn, Code2, BookOpen, AlertCircle } from 'lucide-react';
 
-const COLLAB_CODING_URL = 'http://localhost:5174';
+const COLLAB_CODING_URL = import.meta.env.VITE_COLLAB_CODING_URL || 'http://localhost:5174';
 
 const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formData, onInputChange }) => {
     const handleCodingCreate = () => {
