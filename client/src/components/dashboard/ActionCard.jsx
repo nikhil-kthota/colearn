@@ -1,20 +1,72 @@
 import React from 'react';
-import { Plus, LogIn, Code2, BookOpen, AlertCircle } from 'lucide-react';
+import { Plus, LogIn, Code2, BookOpen, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase } from '../../supabase';
 
 const COLLAB_CODING_URL = import.meta.env.VITE_COLLAB_CODING_URL || 'http://localhost:5174';
 
 const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formData, onInputChange }) => {
-    const handleCodingCreate = () => {
-        const { roomId, roomName } = formData.create;
-        const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(roomName)}&creating=true`;
-        window.open(url, '_blank');
+    const [loading, setLoading] = React.useState(false);
+
+    const handleCodingCreate = async () => {
+        const { roomId, roomName, roomKey } = formData.create;
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('collab_rooms')
+                .insert([{ 
+                    room_id: roomId, 
+                    room_name: roomName, 
+                    room_key: roomKey,
+                    type: 'coding'
+                }]);
+
+            if (error) {
+                if (error.code === '23505') {
+                    alert('Room ID already exists. Please choose a unique ID.');
+                } else {
+                    console.error('Supabase Error:', error);
+                    alert('Error creating room. Make sure the "collab_rooms" table exists in your Supabase project.');
+                }
+                return;
+            }
+
+            const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(roomName)}&creating=true`;
+            window.open(url, '_blank');
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCodingJoin = () => {
-        const { roomId } = formData.join;
-        const savedName = localStorage.getItem('userName') || 'User';
-        const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
-        window.open(url, '_blank');
+    const handleCodingJoin = async () => {
+        const { roomId, roomKey } = formData.join;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('collab_rooms')
+                .select('*')
+                .eq('room_id', roomId)
+                .single();
+
+            if (error || !data) {
+                alert('Room not found. Please check the Room ID.');
+                return;
+            }
+
+            if (data.room_key !== roomKey) {
+                alert('Incorrect Room Key (PIN).');
+                return;
+            }
+
+            const savedName = localStorage.getItem('userName') || 'User';
+            const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
+            window.open(url, '_blank');
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
     return (
         <div className="main-action-card">
@@ -119,14 +171,21 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             </div>
                             <button
                                 className="submit-action-btn"
-                                disabled={!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)}
                                 onClick={activeTab === 'coding' ? handleCodingCreate : undefined}
+                                disabled={loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)}
                                 style={{
-                                    opacity: (!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 0.4 : 1,
-                                    cursor: (!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 'not-allowed' : 'pointer'
+                                    opacity: (loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 0.4 : 1,
+                                    cursor: (loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 'not-allowed' : 'pointer'
                                 }}
                             >
-                                {activeTab === 'coding' ? 'Initialize Workspace' : 'Create Learning Space'}
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={18} />
+                                        Please Wait...
+                                    </>
+                                ) : (
+                                    activeTab === 'coding' ? 'Initialize Workspace' : 'Create Learning Space'
+                                )}
                             </button>
                         </>
                     ) : (
@@ -186,14 +245,21 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                 )}
                             <button
                                 className="submit-action-btn"
-                                disabled={!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)}
+                                disabled={loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)}
                                 onClick={activeTab === 'coding' ? handleCodingJoin : undefined}
                                 style={{
-                                    opacity: (!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 0.4 : 1,
-                                    cursor: (!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 'not-allowed' : 'pointer'
+                                    opacity: (loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 0.4 : 1,
+                                    cursor: (loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 'not-allowed' : 'pointer'
                                 }}
                             >
-                                Enter Room
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={18} />
+                                        Checking Room...
+                                    </>
+                                ) : (
+                                    'Enter Room'
+                                )}
                             </button>
                         </>
                     )}

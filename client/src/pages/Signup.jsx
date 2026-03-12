@@ -1,18 +1,60 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
+import { supabase } from '../supabase';
 import '../styles/Signup.css';
 
-// Since the image is in an artifact folder, I will assume for now we might need to place it in the public folder.
-// For this step I will reference it as a relative import assuming I'll move it, 
-// OR simpler: I'll use a placeholder URL if I can't move it easily, BUT I have the file path.
-// I will move the file in a subsequent step. For now I'll point to where I WILL put it.
-// import bgImage from '../assets/signup-bg.png';
-
 const Signup = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        password: ''
+    });
+
+    const handleInputChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        full_name: formData.fullName
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            alert('Signup successful! Please check your email for verification.');
+            navigate('/login');
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSignup = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
     return (
         <div className="signup-container">
-            {/* Left Side: Form */}
             <div className="signup-left">
                 <Link to="/" className="back-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', textDecoration: 'none', color: 'inherit', fontFamily: 'var(--font-display)' }}>
                     <ArrowLeft size={20} />
@@ -32,30 +74,30 @@ const Signup = () => {
                     <p className="signup-subtitle">Start your journey with us and amplify your potential.</p>
                 </div>
 
-                <form className="signup-form" onSubmit={(e) => e.preventDefault()}>
+                <form className="signup-form" onSubmit={handleSignup}>
                     <div className="form-group">
                         <label className="form-label">Full Name</label>
-                        <input type="text" className="form-input" placeholder="John Doe" />
+                        <input name="fullName" type="text" className="form-input" placeholder="John Doe" value={formData.fullName} onChange={handleInputChange} required />
                     </div>
 
                     <div className="form-group">
                         <label className="form-label">Email Address</label>
-                        <input type="email" className="form-input" placeholder="john@example.com" />
+                        <input name="email" type="email" className="form-input" placeholder="john@example.com" value={formData.email} onChange={handleInputChange} required />
                     </div>
 
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input type="password" className="form-input" placeholder="••••••••" />
+                        <input name="password" type="password" className="form-input" placeholder="••••••••" value={formData.password} onChange={handleInputChange} required />
                     </div>
 
-                    <button type="submit" className="btn-auth-submit">
-                        Sign Up
+                    <button type="submit" className="btn-auth-submit" disabled={loading}>
+                        {loading ? <Loader2 className="animate-spin" size={20} /> : 'Sign Up'}
                     </button>
                 </form>
 
                 <div className="divider">OR</div>
 
-                <button className="btn-google">
+                <button className="btn-google" onClick={handleGoogleSignup}>
                     <Mail size={18} />
                     Sign up with Google
                 </button>

@@ -1,16 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
+import { supabase } from '../supabase';
 import '../styles/Signup.css';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Add auth logic here later
-        console.log("Login clicked");
-        navigate("/dashboard");
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+            
+            // Store full name if available in user metadata
+            const fullName = data.user.user_metadata?.full_name || 'User';
+            localStorage.setItem('userName', fullName);
+            
+            navigate("/dashboard");
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+            });
+            if (error) throw error;
+        } catch (error) {
+            alert(error.message);
+        }
     };
 
     return (
@@ -37,26 +68,26 @@ const Login = () => {
                 <form className="signup-form" onSubmit={handleLogin}>
                     <div className="form-group">
                         <label className="form-label">Email Address</label>
-                        <input type="email" className="form-input" placeholder="john@example.com" />
+                        <input name="email" type="email" className="form-input" placeholder="john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
 
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input type="password" className="form-input" placeholder="••••••••" />
+                        <input name="password" type="password" className="form-input" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
 
                     <div style={{ textAlign: 'right', marginTop: '-1rem' }}>
                         <a href="#" className="auth-forgot-pass">Forgot password?</a>
                     </div>
 
-                    <button type="submit" className="btn-auth-submit">
-                        Login
+                    <button type="submit" className="btn-auth-submit" disabled={loading}>
+                        {loading ? <Loader2 className="animate-spin" size={20} /> : 'Login'}
                     </button>
                 </form>
 
                 <div className="divider">OR</div>
 
-                <button className="btn-google">
+                <button className="btn-google" onClick={handleGoogleLogin}>
                     <Mail size={18} />
                     Login with Google
                 </button>

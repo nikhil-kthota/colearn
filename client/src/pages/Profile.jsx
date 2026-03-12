@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff, Plus, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 import '../styles/Profile.css';
 
 const Profile = ({ isDark, toggleTheme }) => {
@@ -8,6 +9,7 @@ const Profile = ({ isDark, toggleTheme }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [showMainPassword, setShowMainPassword] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Model editing states
     const [editingModelId, setEditingModelId] = useState(null);
@@ -17,22 +19,59 @@ const Profile = ({ isDark, toggleTheme }) => {
     const [visibleModelIds, setVisibleModelIds] = useState(new Set());
     const [showNewModelKey, setShowNewModelKey] = useState(false);
 
-    // Placeholder user data
+    // User data state
     const [user, setUser] = useState({
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        password: 'securePassword123',
-        joinedDate: 'January 2024',
-        roomsCreated: 12,
-        roomsJoined: 45,
-        role: 'Full Stack Developer',
-        models: [
-            { id: 1, name: 'Gemini 3 Flash', key: 'AIzaSyBw-x8Y2z9A7v5u4t3x9Z' },
-            { id: 2, name: 'GPT-4o', key: 'sk-proj-r2v8c9d0f1g2h3j4k5l6m9Xq' }
-        ]
+        name: 'User',
+        email: '',
+        joinedDate: '',
+        roomsCreated: 0,
+        roomsJoined: 0,
+        models: []
     });
 
     const [formData, setFormData] = useState({ ...user });
+
+    useEffect(() => {
+        fetchUserData();
+    }, []);
+
+    const fetchUserData = async () => {
+        try {
+            const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+            if (authError || !authUser) {
+                navigate('/login');
+                return;
+            }
+
+            // Fetch rooms stats (optional, but good for completeness)
+            const { count: roomsCreated } = await supabase
+                .from('collab_rooms')
+                .select('*', { count: 'exact', head: true })
+                .eq('type', 'coding'); // Simplification
+
+            const userData = {
+                name: authUser.user_metadata?.full_name || 'User',
+                email: authUser.email,
+                joinedDate: new Date(authUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+                roomsCreated: roomsCreated || 0,
+                roomsJoined: 0, // Placeholder
+                models: [] // Placeholder for now
+            };
+
+            setUser(userData);
+            setFormData(userData);
+        } catch (err) {
+            console.error('Error fetching user data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('userName');
+        navigate('/');
+    };
 
     const handleEditToggle = () => {
         if (isEditing) {
@@ -128,11 +167,22 @@ const Profile = ({ isDark, toggleTheme }) => {
                 <span>Back</span>
             </button>
 
-            <button className="profile-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div className="profile-header-actions">
+                <button className="profile-action-icon" onClick={handleLogout} title="Logout">
+                    <LogOut size={20} />
+                </button>
+                <button className="profile-action-icon" onClick={toggleTheme} aria-label="Toggle Theme">
+                    {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+            </div>
 
-            <main className="profile-content">
+            {loading ? (
+                <div className="profile-loading">
+                    <Loader2 className="animate-spin" size={48} />
+                    <p>Loading your profile...</p>
+                </div>
+            ) : (
+                <main className="profile-content">
                 {/* Row 1: Profile Image and Details */}
                 <div className="profile-row profile-main-row">
                     <div className="profile-avatar-column">
@@ -179,32 +229,6 @@ const Profile = ({ isDark, toggleTheme }) => {
                             <div className="info-group">
                                 <label>Joined Date</label>
                                 <span>{user.joinedDate}</span>
-                            </div>
-                            <div className="info-group">
-                                <label>Password</label>
-                                <div className="password-row">
-                                    {isEditing ? (
-                                        <div className="password-edit-wrapper">
-                                            <input
-                                                type={showMainPassword ? "text" : "password"}
-                                                name="password"
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                                className="profile-input"
-                                            />
-                                            <button className="visibility-btn" onClick={() => setShowMainPassword(!showMainPassword)}>
-                                                {showMainPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="password-display">
-                                            <span>{showMainPassword ? user.password : '••••••••••••'}</span>
-                                            <button className="visibility-btn" onClick={() => setShowMainPassword(!showMainPassword)}>
-                                                {showMainPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -368,7 +392,8 @@ const Profile = ({ isDark, toggleTheme }) => {
                         </div>
                     )}
                 </div>
-            </main>
+                </main>
+            )}
         </div>
     );
 };
