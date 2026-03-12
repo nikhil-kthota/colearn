@@ -24,8 +24,8 @@ const Profile = ({ isDark, toggleTheme }) => {
         name: 'User',
         email: '',
         joinedDate: '',
-        roomsCreated: 0,
-        roomsJoined: 0,
+        groupsCreated: 0,
+        groupsJoined: 0,
         models: []
     });
 
@@ -43,9 +43,9 @@ const Profile = ({ isDark, toggleTheme }) => {
                 return;
             }
 
-            // Fetch rooms stats (optional, but good for completeness)
-            const { count: roomsCreated } = await supabase
-                .from('collab_rooms')
+            // Fetch groups stats (optional, but good for completeness)
+            const { count: groupsCreated } = await supabase
+                .from('collab_groups')
                 .select('*', { count: 'exact', head: true })
                 .eq('type', 'coding'); // Simplification
 
@@ -53,8 +53,8 @@ const Profile = ({ isDark, toggleTheme }) => {
                 name: authUser.user_metadata?.full_name || 'User',
                 email: authUser.email,
                 joinedDate: new Date(authUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-                roomsCreated: roomsCreated || 0,
-                roomsJoined: 0, // Placeholder
+                groupsCreated: groupsCreated || 0,
+                groupsJoined: 0, // Placeholder
                 models: [] // Placeholder for now
             };
 
@@ -243,12 +243,12 @@ const Profile = ({ isDark, toggleTheme }) => {
                         </div>
                         <div className="stats-list">
                             <div className="stat-entry">
-                                <span className="stat-label">Rooms Created</span>
-                                <span className="stat-value">{user.roomsCreated}</span>
+                                <span className="stat-label">Groups Created</span>
+                                <span className="stat-value">{user.groupsCreated}</span>
                             </div>
                             <div className="stat-entry">
-                                <span className="stat-label">Rooms Joined</span>
-                                <span className="stat-value">{user.roomsJoined}</span>
+                                <span className="stat-label">Groups Joined</span>
+                                <span className="stat-value">{user.groupsJoined}</span>
                             </div>
                         </div>
                     </div>

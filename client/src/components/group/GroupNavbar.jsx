@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
+const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
     const { id } = useParams();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -21,8 +21,8 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
     ];
 
     return (
-        <nav className="room-navbar">
-            <div className="room-nav-section-brand" onClick={() => navigate('/dashboard')}>
+        <nav className="group-navbar">
+            <div className="group-nav-section-brand" onClick={() => navigate('/dashboard')}>
                 <img
                     src={`${import.meta.env.BASE_URL}${isDark ? "logo-dark.png" : "logo-light.png"}`}
                     alt="CoLearn Logo"
@@ -31,19 +31,19 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
                 <span>CoLearn</span>
             </div>
 
-            <div className="room-nav-section-links">
+            <div className="group-nav-section-links">
                 <div
-                    className="room-nav-item-container room-nav-section-members"
+                    className="group-nav-item-container group-nav-section-members"
                     onMouseEnter={() => setIsMembersOpen(true)}
                     onMouseLeave={() => setIsMembersOpen(false)}
                 >
-                    <div className="room-nav-item flex-center">
+                    <div className="group-nav-item flex-center">
                         Members
                     </div>
 
                     {isMembersOpen && (
-                        <div className="room-dropdown members-dropdown">
-                            <div className="dropdown-header">Room Members</div>
+                        <div className="group-dropdown members-dropdown">
+                            <div className="dropdown-header">Group Members</div>
                             {members.map(member => (
                                 <div key={member.id} className="member-item">
                                     <div className="member-avatar">{member.name.charAt(0)}</div>
@@ -57,36 +57,36 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
                     )}
                 </div>
 
-                <div className="room-nav-section-chat">
+                <div className="group-nav-section-chat">
                     <div
-                        className="room-nav-item"
-                        onClick={() => navigate(`/room/${id}/chat`)}
+                        className="group-nav-item"
+                        onClick={() => navigate(`/group/${id}/chat`)}
                     >
                         Chat
                     </div>
                 </div>
             </div>
 
-            <div className="room-name-display">
-                {roomName.toUpperCase()}
+            <div className="group-name-display">
+                {groupName.toUpperCase()}
             </div>
 
-            <div className="room-nav-section-actions">
-                <button className="theme-toggle room-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
+            <div className="group-nav-section-actions">
+                <button className="theme-toggle group-theme-toggle" onClick={toggleTheme} aria-label="Toggle Theme">
                     {isDark ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
 
                 <div
-                    className="room-user-container"
+                    className="group-user-container"
                     onMouseEnter={() => setIsProfileOpen(true)}
                     onMouseLeave={() => setIsProfileOpen(false)}
                 >
-                    <div className="room-user-avatar" onClick={() => navigate('/profile')}>
+                    <div className="group-user-avatar" onClick={() => navigate('/profile')}>
                         JD
                     </div>
 
                     {isProfileOpen && (
-                        <div className="room-dropdown profile-dropdown">
+                        <div className="group-dropdown profile-dropdown">
                             <button className="dropdown-item" onClick={() => navigate('/profile')}>
                                 <User size={16} />
                                 <span>Profile</span>
@@ -104,4 +104,4 @@ const RoomNavbar = ({ roomName = "REACT PROJECT", isDark, toggleTheme }) => {
     );
 };
 
-export default RoomNavbar;
+export default GroupNavbar;

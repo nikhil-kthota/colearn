@@ -1,4 +1,4 @@
-.room-layout {
+.group-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -8,18 +8,18 @@
     color: var(--text-primary);
 }
 
-[data-theme='dark'] .room-layout {
+[data-theme='dark'] .group-layout {
     background-color: #000000;
 }
 
-[data-theme='light'] .room-layout {
+[data-theme='light'] .group-layout {
     background-color: var(--color-white);
     color: var(--color-deep-blue);
 }
 
 
 
-.room-navbar {
+.group-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,21 +31,21 @@
     z-index: 1000;
 }
 
-[data-theme='light'] .room-navbar {
+[data-theme='light'] .group-navbar {
     background-color: var(--color-neon-blue);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--color-deep-blue);
 }
 
-.room-nav-section-brand,
-.room-nav-section-members,
-.room-nav-section-chat,
-.room-nav-section-actions {
+.group-nav-section-brand,
+.group-nav-section-members,
+.group-nav-section-chat,
+.group-nav-section-actions {
     display: flex;
     align-items: center;
 }
 
-.room-nav-section-brand {
+.group-nav-section-brand {
     gap: 0.5rem;
     cursor: pointer;
     font-family: var(--font-display);
@@ -53,26 +53,26 @@
     font-size: 1.2rem;
 }
 
-.room-nav-section-links {
+.group-nav-section-links {
     display: flex;
     align-items: center;
     flex: 1;
 }
 
-.room-nav-section-members {
+.group-nav-section-members {
     margin-left: 2rem;
 }
 
-.room-nav-section-chat {
+.group-nav-section-chat {
     margin-left: auto;
     margin-right: 1.5rem;
 }
 
-.room-nav-section-actions {
+.group-nav-section-actions {
     gap: 1.5rem;
 }
 
-.room-nav-brand {
+.group-nav-brand {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -82,7 +82,7 @@
     cursor: pointer;
 }
 
-.room-nav-item {
+.group-nav-item {
     font-family: var(--font-body);
     font-weight: 600;
     font-size: 0.85rem;
@@ -95,25 +95,25 @@
     border-radius: 6px;
 }
 
-.room-nav-item:hover {
+.group-nav-item:hover {
     opacity: 1;
     background-color: rgba(16, 185, 129, 0.1);
     color: var(--color-neon-blue);
 }
 
-[data-theme='light'] .room-nav-item:hover {
+[data-theme='light'] .group-nav-item:hover {
     background-color: rgba(16, 30, 51, 0.1);
     color: var(--color-deep-blue);
 }
 
 @media (max-width: 900px) {
-    .room-nav-item {
+    .group-nav-item {
         font-size: 0.75rem;
         padding: 0.3rem 0.5rem;
     }
 }
 
-.room-name-display {
+.group-name-display {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -125,12 +125,12 @@
     pointer-events: none;
 }
 
-[data-theme='light'] .room-name-display {
+[data-theme='light'] .group-name-display {
     color: var(--color-deep-blue);
 }
 
 @media (max-width: 768px) {
-    .room-navbar {
+    .group-navbar {
         display: grid;
         grid-template-areas:
             "brand actions"
@@ -142,7 +142,7 @@
         gap: 0.75rem;
     }
 
-    .room-nav-section-links {
+    .group-nav-section-links {
         grid-area: links;
         justify-content: center;
         width: 100%;
@@ -152,17 +152,17 @@
         padding-top: 0.75rem;
     }
 
-    .room-nav-section-brand {
+    .group-nav-section-brand {
         grid-area: brand;
     }
 
-    .room-nav-section-actions {
+    .group-nav-section-actions {
         grid-area: actions;
         justify-content: flex-end;
         gap: 1rem;
     }
 
-    .room-name-display {
+    .group-name-display {
         grid-area: name;
         position: static;
         transform: none;
@@ -173,8 +173,8 @@
         letter-spacing: 1px;
     }
 
-    .room-nav-section-members,
-    .room-nav-section-chat {
+    .group-nav-section-members,
+    .group-nav-section-chat {
         margin: 0;
         justify-content: center;
     }
@@ -183,7 +183,7 @@
 
 
 
-.room-user-avatar {
+.group-user-avatar {
     width: 36px;
     height: 36px;
     background-color: white;
@@ -198,14 +198,14 @@
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-[data-theme='light'] .room-user-avatar {
+[data-theme='light'] .group-user-avatar {
     background-color: var(--color-deep-blue);
     color: white;
     border: 2px solid rgba(16, 30, 51, 0.1);
 }
 
-.room-nav-item-container,
-.room-user-container {
+.group-nav-item-container,
+.group-user-container {
     position: relative;
     display: flex;
     align-items: center;
@@ -221,17 +221,17 @@
     margin-right: 0.5rem;
 }
 
-.room-theme-toggle {
+.group-theme-toggle {
     margin: 0 0.5rem;
 }
 
-[data-theme='light'] .room-theme-toggle {
+[data-theme='light'] .group-theme-toggle {
     color: var(--color-deep-blue);
 }
 
 
 
-.room-dropdown {
+.group-dropdown {
     position: absolute;
     top: calc(100% + 5px);
     background-color: var(--color-deep-blue);
@@ -244,7 +244,7 @@
     backdrop-filter: blur(15px);
 }
 
-[data-theme='light'] .room-dropdown {
+[data-theme='light'] .group-dropdown {
     background-color: #ffffff;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -357,8 +357,8 @@
 
 
 
-.room-nav-item-container::after,
-.room-user-container::after {
+.group-nav-item-container::after,
+.group-user-container::after {
     content: '';
     position: absolute;
     top: 100%;
@@ -369,7 +369,7 @@
 
 
 
-.room-main-container {
+.group-main-container {
     display: grid;
     grid-template-columns: 300px 1fr 450px;
     flex: 1;
@@ -379,13 +379,13 @@
     transition: grid-template-columns 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.room-main-container.files-collapsed {
+.group-main-container.files-collapsed {
     grid-template-columns: 100px 1fr 450px;
 }
 
 
 
-.room-column {
+.group-column {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -396,12 +396,12 @@
     transition: all 0.3s ease;
 }
 
-[data-theme='light'] .room-column {
+[data-theme='light'] .group-column {
     background-color: rgba(14, 165, 233, 0.1);
     border: 1px solid rgba(14, 165, 233, 0.3);
 }
 
-[data-theme='dark'] .room-column {
+[data-theme='dark'] .group-column {
     background-color: var(--color-deep-blue);
     border: 1px solid rgba(16, 185, 129, 0.15);
 }

@@ -68,7 +68,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                 <div className="desktop-actions">
                     <div className="nav-links">
                         <button className="nav-link active" onClick={() => handleScrollTo('dashboard-hero')}>Collaborate</button>
-                        <button className="nav-link" onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
+                        <button className="nav-link" onClick={() => handleScrollTo('my-groups-section')}>My Groups</button>
                     </div>
 
                     <div className="nav-actions">
@@ -142,7 +142,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-nav-links">
                     <button onClick={() => handleScrollTo('dashboard-hero')}>Collaborate</button>
-                    <button onClick={() => handleScrollTo('my-rooms-section')}>My Rooms</button>
+                    <button onClick={() => handleScrollTo('my-groups-section')}>My Groups</button>
                 </div>
             </div>
         </nav>

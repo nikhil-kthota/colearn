@@ -17,7 +17,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse }) => {
     };
 
     return (
-        <div className={`room-column files-column ${isCollapsed ? 'collapsed' : ''}`}>
+        <div className={`group-column files-column ${isCollapsed ? 'collapsed' : ''}`}>
             <div className={`column-header flex-between`}>
                 <div className="flex-center">
                     FILES

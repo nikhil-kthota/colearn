@@ -1,14 +1,14 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/MyRooms.css';
+import '../../styles/MyGroups.css';
 
-const MyRooms = () => {
+const MyGroups = () => {
     const navigate = useNavigate();
     const [showAll, setShowAll] = React.useState(false);
 
     // Placeholder data
-    const rooms = [
+    const groups = [
         {
             id: '1',
             name: 'React Micro-Frontend',
@@ -46,17 +46,17 @@ const MyRooms = () => {
         }
     ];
 
-    const displayedRooms = showAll ? rooms : rooms.slice(0, 4);
+    const displayedGroups = showAll ? groups : groups.slice(0, 4);
 
-    const handleRoomClick = (room) => {
-        navigate(`/room/${room.id}`);
+    const handleGroupClick = (group) => {
+        navigate(`/group/${group.id}`);
     };
 
     return (
-        <section className="my-rooms-section" id="my-rooms-section">
+        <section className="my-groups-section" id="my-groups-section">
             <div className="section-header">
-                <h2 className="section-title-small">My Rooms</h2>
-                {rooms.length > 4 && (
+                <h2 className="section-title-small">My Groups</h2>
+                {groups.length > 4 && (
                     <button className="view-all-btn" onClick={() => setShowAll(!showAll)}>
                         {showAll ? 'Show Less' : 'View All'}
                         <ChevronDown
@@ -70,23 +70,23 @@ const MyRooms = () => {
                 )}
             </div>
 
-            <div className="rooms-grid">
-                {displayedRooms.map((room) => (
+            <div className="groups-grid">
+                {displayedGroups.map((group) => (
                     <div
-                        key={room.id}
-                        className={`room-card ${room.type} fade-in`}
-                        onClick={() => handleRoomClick(room)}
+                        key={group.id}
+                        className={`group-card ${group.type} fade-in`}
+                        onClick={() => handleGroupClick(group)}
                     >
-                        <div className="room-type-badge">
-                            {room.type === 'coding' ? 'Code' : 'Learning'}
+                        <div className="group-type-badge">
+                            {group.type === 'coding' ? 'Code' : 'Learning'}
                         </div>
-                        <div className="room-overlay"></div>
+                        <div className="group-overlay"></div>
 
-                        <div className="room-content-wrapper">
-                            <h3 className="room-name">{room.name}</h3>
-                            <div className="room-details">
-                                <span className="meta-item">{room.members} members</span>
-                                <span className="meta-item">Used {room.lastUsed}</span>
+                        <div className="group-content-wrapper">
+                            <h3 className="group-name">{group.name}</h3>
+                            <div className="group-details">
+                                <span className="meta-item">{group.members} members</span>
+                                <span className="meta-item">Used {group.lastUsed}</span>
                             </div>
                         </div>
                     </div>
@@ -96,4 +96,4 @@ const MyRooms = () => {
     );
 };
 
-export default MyRooms;
+export default MyGroups;

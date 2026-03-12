@@ -1,34 +1,34 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import RoomNavbar from '../components/room/RoomNavbar';
-import FilesColumn from '../components/room/FilesColumn';
-import FileViewerColumn from '../components/room/FileViewerColumn';
-import AIAssistanceColumn from '../components/room/AIAssistanceColumn';
-import '../styles/Room.css';
+import GroupNavbar from '../components/group/GroupNavbar';
+import FilesColumn from '../components/group/FilesColumn';
+import FileViewerColumn from '../components/group/FileViewerColumn';
+import AIAssistanceColumn from '../components/group/AIAssistanceColumn';
+import '../styles/Group.css';
 
-const Room = ({ isDark, toggleTheme }) => {
+const Group = ({ isDark, toggleTheme }) => {
     const { id } = useParams();
     const [isFilesCollapsed, setIsFilesCollapsed] = useState(false);
 
 
-    const roomNames = {
+    const groupNames = {
         '1': 'React Micro-Frontend',
         '2': 'System Design Patterns',
         '3': 'Python for Data Science',
         '4': 'Advanced Machine Learning'
     };
 
-    const currentRoomName = roomNames[id] || "Collaboration Room";
+    const currentGroupName = groupNames[id] || "Collaboration Group";
 
     return (
-        <div className="room-layout">
-            <RoomNavbar
-                roomName={currentRoomName}
+        <div className="group-layout">
+            <GroupNavbar
+                groupName={currentGroupName}
                 isDark={isDark}
                 toggleTheme={toggleTheme}
             />
 
-            <main className={`room-main-container ${isFilesCollapsed ? 'files-collapsed' : ''}`}>
+            <main className={`group-main-container ${isFilesCollapsed ? 'files-collapsed' : ''}`}>
                 <FilesColumn
                     isCollapsed={isFilesCollapsed}
                     toggleCollapse={() => setIsFilesCollapsed(!isFilesCollapsed)}
@@ -40,4 +40,4 @@ const Room = ({ isDark, toggleTheme }) => {
     );
 };
 
-export default Room;
+export default Group;

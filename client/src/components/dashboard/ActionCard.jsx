@@ -8,29 +8,29 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
     const [loading, setLoading] = React.useState(false);
 
     const handleCodingCreate = async () => {
-        const { roomId, roomName, roomKey } = formData.create;
+        const { groupId, groupName, groupKey } = formData.create;
         setLoading(true);
         try {
             const { error } = await supabase
-                .from('collab_rooms')
+                .from('collab_groups')
                 .insert([{ 
-                    room_id: roomId, 
-                    room_name: roomName, 
-                    room_key: roomKey,
+                    group_id: groupId, 
+                    group_name: groupName, 
+                    group_key: groupKey,
                     type: 'coding'
                 }]);
 
             if (error) {
                 if (error.code === '23505') {
-                    alert('Room ID already exists. Please choose a unique ID.');
+                    alert('Group ID already exists. Please choose a unique ID.');
                 } else {
                     console.error('Supabase Error:', error);
-                    alert('Error creating room. Make sure the "collab_rooms" table exists in your Supabase project.');
+                    alert('Error creating group. Make sure the "collab_groups" table exists in your Supabase project.');
                 }
                 return;
             }
 
-            const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(roomName)}&creating=true`;
+            const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}&creating=true`;
             window.open(url, '_blank');
         } catch (err) {
             console.error('Unexpected error:', err);
@@ -40,27 +40,27 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
     };
 
     const handleCodingJoin = async () => {
-        const { roomId, roomKey } = formData.join;
+        const { groupId, groupKey } = formData.join;
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('collab_rooms')
+                .from('collab_groups')
                 .select('*')
-                .eq('room_id', roomId)
+                .eq('group_id', groupId)
                 .single();
 
             if (error || !data) {
-                alert('Room not found. Please check the Room ID.');
+                alert('Group not found. Please check the Group ID.');
                 return;
             }
 
-            if (data.room_key !== roomKey) {
-                alert('Incorrect Room Key (PIN).');
+            if (data.group_key !== groupKey) {
+                alert('Incorrect Group Key (PIN).');
                 return;
             }
 
             const savedName = localStorage.getItem('userName') || 'User';
-            const url = `${COLLAB_CODING_URL}?roomId=${encodeURIComponent(roomId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
+            const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
             window.open(url, '_blank');
         } catch (err) {
             console.error('Unexpected error:', err);
@@ -87,14 +87,14 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                         onClick={() => setActionType('create')}
                     >
                         <Plus size={18} />
-                        Create Room
+                        Create Group
                     </button>
                     <button
                         className={`toggle-btn ${actionType === 'join' ? 'active' : ''}`}
                         onClick={() => setActionType('join')}
                     >
                         <LogIn size={18} />
-                        Join Room
+                        Join Group
                     </button>
                 </div>
 
@@ -103,11 +103,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                         <>
                             <div className="form-row">
                                 <input
-                                    name="roomName"
+                                    name="groupName"
                                     type="text"
-                                    placeholder="Room Name"
+                                    placeholder="Group Name"
                                     className="action-input"
-                                    value={formData.create.roomName}
+                                    value={formData.create.groupName}
                                     onChange={(e) => onInputChange(e, 'create')}
                                     onFocus={() => setIsPaused(true)}
                                     onBlur={() => setIsPaused(false)}
@@ -115,11 +115,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             </div>
                             <div className="form-row">
                                 <input
-                                    name="roomId"
+                                    name="groupId"
                                     type="text"
-                                    placeholder="Room ID"
+                                    placeholder="Group ID"
                                     className="action-input"
-                                    value={formData.create.roomId}
+                                    value={formData.create.groupId}
                                     onChange={(e) => onInputChange(e, 'create')}
                                     onFocus={() => setIsPaused(true)}
                                     onBlur={() => setIsPaused(false)}
@@ -127,12 +127,12 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             </div>
                             <div className="form-row">
                                 <input
-                                    name="roomKey"
+                                    name="groupKey"
                                     type="text"
                                     maxLength={5}
-                                    placeholder="Room Key (4 or 5 digit PIN)"
-                                    className={`action-input ${formData.create.roomKey && !/^\d{4,5}$/.test(formData.create.roomKey) ? 'error' : ''}`}
-                                    value={formData.create.roomKey}
+                                    placeholder="Group Key (4 or 5 digit PIN)"
+                                    className={`action-input ${formData.create.groupKey && !/^\d{4,5}$/.test(formData.create.groupKey) ? 'error' : ''}`}
+                                    value={formData.create.groupKey}
                                     onChange={(e) => {
                                         if (e.target.value === '' || /^\d+$/.test(e.target.value)) {
                                             onInputChange(e, 'create');
@@ -141,28 +141,28 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                     onFocus={() => setIsPaused(true)}
                                     onBlur={() => setIsPaused(false)}
                                 />
-                                {formData.create.roomKey && !/^\d{4,5}$/.test(formData.create.roomKey) && (
+                                {formData.create.groupKey && !/^\d{4,5}$/.test(formData.create.groupKey) && (
                                     <div className="error-message">
                                         <AlertCircle size={14} />
                                         <span>Key must be a 4 or 5 digit numeric PIN</span>
                                     </div>
                                 )}
-                                {(formData.create.roomName || formData.create.roomId || formData.create.roomKey) &&
-                                    (!formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) && (
+                                {(formData.create.groupName || formData.create.groupId || formData.create.groupKey) &&
+                                    (!formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)) && (
                                         <div className="error-message" style={{ justifyContent: 'center', marginBottom: '0.8rem', opacity: 0.9 }}>
                                             <AlertCircle size={14} />
                                             <span>
                                                 {(() => {
                                                     const missing = [];
-                                                    if (!formData.create.roomName.trim()) missing.push('Name');
-                                                    if (!formData.create.roomId.trim()) missing.push('ID');
-                                                    if (!formData.create.roomKey) missing.push('Key');
+                                                    if (!formData.create.groupName.trim()) missing.push('Name');
+                                                    if (!formData.create.groupId.trim()) missing.push('ID');
+                                                    if (!formData.create.groupKey) missing.push('Key');
 
                                                     if (missing.length === 3) return 'Please enter all fields';
-                                                    if (missing.length === 2) return `Please enter Room ${missing[0]} and ${missing[1]}`;
-                                                    if (missing.length === 1) return `Please enter Room ${missing[0]}`;
+                                                    if (missing.length === 2) return `Please enter Group ${missing[0]} and ${missing[1]}`;
+                                                    if (missing.length === 1) return `Please enter Group ${missing[0]}`;
 
-                                                    if (!/^\d{4,5}$/.test(formData.create.roomKey)) return 'Invalid PIN format';
+                                                    if (!/^\d{4,5}$/.test(formData.create.groupKey)) return 'Invalid PIN format';
                                                     return '';
                                                 })()}
                                             </span>
@@ -172,10 +172,10 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             <button
                                 className="submit-action-btn"
                                 onClick={activeTab === 'coding' ? handleCodingCreate : undefined}
-                                disabled={loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)}
+                                disabled={loading || !formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)}
                                 style={{
-                                    opacity: (loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 0.4 : 1,
-                                    cursor: (loading || !formData.create.roomName.trim() || !formData.create.roomId.trim() || !/^\d{4,5}$/.test(formData.create.roomKey)) ? 'not-allowed' : 'pointer'
+                                    opacity: (loading || !formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)) ? 0.4 : 1,
+                                    cursor: (loading || !formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)) ? 'not-allowed' : 'pointer'
                                 }}
                             >
                                 {loading ? (
@@ -192,11 +192,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                         <>
                             <div className="form-row">
                                 <input
-                                    name="roomId"
+                                    name="groupId"
                                     type="text"
-                                    placeholder="Room ID"
+                                    placeholder="Group ID"
                                     className="action-input"
-                                    value={formData.join.roomId}
+                                    value={formData.join.groupId}
                                     onChange={(e) => onInputChange(e, 'join')}
                                     onFocus={() => setIsPaused(true)}
                                     onBlur={() => setIsPaused(false)}
@@ -204,12 +204,12 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             </div>
                             <div className="form-row">
                                 <input
-                                    name="roomKey"
+                                    name="groupKey"
                                     type="text"
                                     maxLength={5}
-                                    placeholder="Room Key (PIN)"
-                                    className={`action-input ${formData.join.roomKey && !/^\d{4,5}$/.test(formData.join.roomKey) ? 'error' : ''}`}
-                                    value={formData.join.roomKey}
+                                    placeholder="Group Key (PIN)"
+                                    className={`action-input ${formData.join.groupKey && !/^\d{4,5}$/.test(formData.join.groupKey) ? 'error' : ''}`}
+                                    value={formData.join.groupKey}
                                     onChange={(e) => {
                                         if (e.target.value === '' || /^\d+$/.test(e.target.value)) {
                                             onInputChange(e, 'join');
@@ -218,26 +218,26 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                     onFocus={() => setIsPaused(true)}
                                     onBlur={() => setIsPaused(false)}
                                 />
-                                {formData.join.roomKey && !/^\d{4,5}$/.test(formData.join.roomKey) && (
+                                {formData.join.groupKey && !/^\d{4,5}$/.test(formData.join.groupKey) && (
                                     <div className="error-message">
                                         <AlertCircle size={14} />
                                         <span>Key must be a 4 or 5 digit numeric PIN</span>
                                     </div>
                                 )}
                             </div>
-                            {(formData.join.roomId || formData.join.roomKey) &&
-                                (!formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) && (
+                            {(formData.join.groupId || formData.join.groupKey) &&
+                                (!formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)) && (
                                     <div className="error-message" style={{ justifyContent: 'center', marginBottom: '0.8rem', opacity: 0.9 }}>
                                         <AlertCircle size={14} />
                                         <span>
                                             {(() => {
                                                 const missing = [];
-                                                if (!formData.join.roomId.trim()) missing.push('ID');
-                                                if (!formData.join.roomKey) missing.push('Key');
+                                                if (!formData.join.groupId.trim()) missing.push('ID');
+                                                if (!formData.join.groupKey) missing.push('Key');
 
-                                                if (missing.length === 2) return 'Please enter Room ID and Key';
-                                                if (missing.length === 1) return `Please enter Room ${missing[0]}`;
-                                                if (!/^\d{4,5}$/.test(formData.join.roomKey)) return 'Invalid PIN format';
+                                                if (missing.length === 2) return 'Please enter Group ID and Key';
+                                                if (missing.length === 1) return `Please enter Group ${missing[0]}`;
+                                                if (!/^\d{4,5}$/.test(formData.join.groupKey)) return 'Invalid PIN format';
                                                 return '';
                                             })()}
                                         </span>
@@ -245,20 +245,20 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                 )}
                             <button
                                 className="submit-action-btn"
-                                disabled={loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)}
+                                disabled={loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)}
                                 onClick={activeTab === 'coding' ? handleCodingJoin : undefined}
                                 style={{
-                                    opacity: (loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 0.4 : 1,
-                                    cursor: (loading || !formData.join.roomId.trim() || !/^\d{4,5}$/.test(formData.join.roomKey)) ? 'not-allowed' : 'pointer'
+                                    opacity: (loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)) ? 0.4 : 1,
+                                    cursor: (loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)) ? 'not-allowed' : 'pointer'
                                 }}
                             >
                                 {loading ? (
                                     <>
                                         <Loader2 className="animate-spin" size={18} />
-                                        Checking Room...
+                                        Checking Group...
                                     </>
                                 ) : (
-                                    'Enter Room'
+                                    'Enter Group'
                                 )}
                             </button>
                         </>

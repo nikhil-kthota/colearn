@@ -13,8 +13,8 @@ CoLearn is a premium, high-performance collaborative learning solution designed 
 
 ### 📊 Modern User Dashboard
 *   **Personalized Experience**: High-end landing with spacious, glassmorphic design and intuitive navigation.
-*   **Dynamic Room Management**: "My Rooms" section that smartly displays the most recent 4 rooms.
-*   **Smooth Transitions**: Premium expand/collapse functionality for viewing all rooms with a single click.
+*   **Dynamic Group Management**: "My Groups" section that smartly displays the most recent 4 groups.
+*   **Smooth Transitions**: Premium expand/collapse functionality for viewing all groups with a single click.
 *   **Action Tabs**: Quick access to start new coding or learning sessions.
 
 ### 👤 Advanced User Profile

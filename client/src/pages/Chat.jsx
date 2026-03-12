@@ -20,7 +20,7 @@ import {
     Menu
 } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
-import RoomNavbar from '../components/room/RoomNavbar';
+import GroupNavbar from '../components/group/GroupNavbar';
 import '../styles/Chat.css';
 
 const Chat = ({ isDark, toggleTheme }) => {
@@ -48,8 +48,8 @@ const Chat = ({ isDark, toggleTheme }) => {
         { id: 4, name: "Charlie Davis", avatar: "CD", color: "#8b5cf6", status: "online" }
     ];
 
-    // Mock data for room files
-    const roomFiles = [
+    // Mock data for group files
+    const groupFiles = [
         { id: 1, name: 'architecture_diagram.pdf', size: '2.4 MB' },
         { id: 2, name: 'app_logic.js', size: '15 KB' },
         { id: 3, name: 'brand_assets.zip', size: '12.8 MB' }
@@ -222,14 +222,14 @@ const Chat = ({ isDark, toggleTheme }) => {
         });
     };
 
-    const roomNames = { '1': 'React Micro-Frontend', '2': 'System Design Patterns' };
-    const currentRoomName = roomNames[id] || "Collaboration Room";
+    const groupNames = { '1': 'React Micro-Frontend', '2': 'System Design Patterns' };
+    const currentGroupName = groupNames[id] || "Collaboration Group";
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
         <div className="chat-layout">
-            <RoomNavbar roomName={currentRoomName} isDark={isDark} toggleTheme={toggleTheme} />
+            <GroupNavbar groupName={currentGroupName} isDark={isDark} toggleTheme={toggleTheme} />
 
             <main className="chat-main">
                 {/* Mobile Sidebar Overlay Backdrop */}
@@ -287,10 +287,10 @@ const Chat = ({ isDark, toggleTheme }) => {
 
                     <div className="sidebar-section files-section">
                         <div className="section-header">
-                            <span>ROOM FILES</span>
+                            <span>GROUP FILES</span>
                         </div>
                         <div className="mini-file-list">
-                            {roomFiles.map(file => (
+                            {groupFiles.map(file => (
                                 <div key={file.id} className="file-pill">
                                     <FileText size={12} />
                                     <span>{file.name}</span>
@@ -307,9 +307,9 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <button className="mobile-menu-toggle" onClick={toggleSidebar}>
                                 <Menu size={24} />
                             </button>
-                            <button className="back-link" onClick={() => navigate(`/room/${id}`)}>
+                            <button className="back-link" onClick={() => navigate(`/group/${id}`)}>
                                 <ArrowLeft size={18} />
-                                <span>Exit to Room</span>
+                                <span>Exit to Group</span>
                             </button>
                             <div className="v-divider"></div>
                             <div className="active-chat-info">
@@ -363,10 +363,10 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <div className="file-suggestions-popup fade-in">
                                 <div className="suggestions-header">
                                     <AtSign size={14} />
-                                    <span>Mention a Room File</span>
+                                    <span>Mention a Group File</span>
                                 </div>
                                 <div className="suggestions-list">
-                                    {roomFiles.map(file => (
+                                    {groupFiles.map(file => (
                                         <button
                                             key={file.id}
                                             className="suggestion-item"

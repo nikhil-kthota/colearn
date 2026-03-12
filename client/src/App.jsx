@@ -6,7 +6,7 @@ import Signup from './pages/Signup'
 import Login from './pages/Login'
 import UserHome from './pages/UserHome'
 import Profile from './pages/Profile'
-import Room from './pages/Room'
+import Group from './pages/Group'
 import Chat from './pages/Chat'
 
 function App() {
@@ -84,12 +84,12 @@ function App() {
               <Profile isDark={isDark} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           } />
-          <Route path="/room/:id" element={
+          <Route path="/group/:id" element={
             <ProtectedRoute>
-              <Room isDark={isDark} toggleTheme={toggleTheme} />
+              <Group isDark={isDark} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           } />
-          <Route path="/room/:id/chat" element={
+          <Route path="/group/:id/chat" element={
             <ProtectedRoute>
               <Chat isDark={isDark} toggleTheme={toggleTheme} />
             </ProtectedRoute>

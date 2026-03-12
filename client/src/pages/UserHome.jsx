@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardNavbar from '../components/dashboard/DashboardNavbar';
 import ActionTabs from '../components/dashboard/ActionTabs';
 import ActionCard from '../components/dashboard/ActionCard';
-import MyRooms from '../components/dashboard/MyRooms';
+import MyGroups from '../components/dashboard/MyGroups';
 import '../styles/UserHome.css';
 
 const UserHome = ({ isDark, toggleTheme }) => {
@@ -11,8 +11,8 @@ const UserHome = ({ isDark, toggleTheme }) => {
     const [progress, setProgress] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [formData, setFormData] = useState({
-        create: { roomName: '', roomId: '', roomKey: '' },
-        join: { roomId: '', roomKey: '' }
+        create: { groupName: '', groupId: '', groupKey: '' },
+        join: { groupId: '', groupKey: '' }
     });
 
     const handleInputChange = (e, type) => {
@@ -92,7 +92,7 @@ const UserHome = ({ isDark, toggleTheme }) => {
                     />
                 </section>
 
-                <MyRooms />
+                <MyGroups />
             </main>
         </div>
     );

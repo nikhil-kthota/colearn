@@ -18,7 +18,7 @@ const AIAssistanceColumn = () => {
 
     const mockFiles = [
         { id: 1, name: 'main.jsx' },
-        { id: 2, name: 'Room.css' },
+        { id: 2, name: 'Group.css' },
         { id: 3, name: 'index.html' }
     ];
 
@@ -84,7 +84,7 @@ const AIAssistanceColumn = () => {
     };
 
     return (
-        <div className="room-column ai-column">
+        <div className="group-column ai-column">
             <div className="column-header flex-center">
                 AI ASSISTANCE
             </div>
