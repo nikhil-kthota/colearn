@@ -27,7 +27,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         } else {
-            navigate('/dashboard');
+            navigate('/');
             setTimeout(() => {
                 const newElement = document.getElementById(id);
                 if (newElement) {

@@ -28,7 +28,7 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
 
     return (
         <nav className="group-navbar">
-            <div className="group-nav-section-brand" onClick={() => navigate('/dashboard')}>
+            <div className="group-nav-section-brand" onClick={() => navigate('/')}>
                 <img
                     src={`${import.meta.env.BASE_URL}${isDark ? "logo-dark.png" : "logo-light.png"}`}
                     alt="CoLearn Logo"

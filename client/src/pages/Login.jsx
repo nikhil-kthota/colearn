@@ -25,7 +25,7 @@ const Login = () => {
             const fullName = data.user.user_metadata?.full_name || 'User';
             localStorage.setItem('userName', fullName);
             
-            navigate("/dashboard");
+            navigate("/");
         } catch (error) {
             alert(error.message);
         } finally {

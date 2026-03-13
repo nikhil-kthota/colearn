@@ -19,7 +19,7 @@ function App() {
   }, [isDark]);
 
   useEffect(() => {
-    // Check active sessions and sets the user
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user?.user_metadata?.full_name) {
@@ -28,7 +28,7 @@ function App() {
       setLoading(false);
     });
 
-    // Listen for changes on auth state (login, logout, etc.)
+    // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user?.user_metadata?.full_name) {
@@ -40,29 +40,30 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Separate effect for OAuth redirect handling to keep things clean
+  // OAuth Fragment Handler
   useEffect(() => {
     const hash = window.location.hash;
     if (hash && hash.includes('access_token=')) {
-        console.log("OAuth access token detected in hash. Redirecting to dashboard...");
-        // This handles cases where Supabase returns #access_token... instead of #/access_token...
+        // Redirect to root; our conditional logic will then pick up the session
         setTimeout(() => {
-            window.location.hash = '#/dashboard';
+            window.location.hash = '#/';
         }, 100);
     }
   }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
 
+  // Protected Route: Only accessible when logged in
   const ProtectedRoute = ({ children }) => {
     if (loading) return null;
     if (!session) return <Navigate to="/login" replace />;
     return children;
   };
 
+  // Public Route: Only accessible when NOT logged in (Login/Signup)
   const PublicRoute = ({ children }) => {
     if (loading) return null;
-    if (session) return <Navigate to="/dashboard" replace />;
+    if (session) return <Navigate to="/" replace />;
     return children;
   };
 
@@ -70,11 +71,16 @@ function App() {
     <Router>
       <div className="app-wrapper">
         <Routes>
+          {/* Dynamic Home Route */}
           <Route path="/" element={
-            <PublicRoute>
-              <LandingPage isDark={isDark} toggleTheme={toggleTheme} />
-            </PublicRoute>
+            loading ? null : (
+              session ? 
+                <UserHome isDark={isDark} toggleTheme={toggleTheme} /> : 
+                <LandingPage isDark={isDark} toggleTheme={toggleTheme} />
+            )
           } />
+
+          {/* Auth Routes */}
           <Route path="/signup" element={
             <PublicRoute>
               <Signup />
@@ -86,11 +92,9 @@ function App() {
             </PublicRoute>
           } />
           
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <UserHome isDark={isDark} toggleTheme={toggleTheme} />
-            </ProtectedRoute>
-          } />
+          {/* Keep /dashboard for compatibility, but it just shows UserHome */}
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile isDark={isDark} toggleTheme={toggleTheme} />
@@ -107,7 +111,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Default fallback for confused routers */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
