@@ -37,14 +37,19 @@ function App() {
       setLoading(false);
     });
 
-    // Handle OAuth redirection fragments if the HashRouter doesn't catch them
-    // Supabase returns /#access_token=... but HashRouter expects /#/...
-    if (window.location.hash && window.location.hash.includes('access_token')) {
-        // Just let Supabase handle the token, and we redirect to a clean URL
-        window.location.hash = '#/dashboard';
-    }
-
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Separate effect for OAuth redirect handling to keep things clean
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+        console.log("OAuth access token detected in hash. Redirecting to dashboard...");
+        // This handles cases where Supabase returns #access_token... instead of #/access_token...
+        setTimeout(() => {
+            window.location.hash = '#/dashboard';
+        }, 100);
+    }
   }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
@@ -102,9 +107,8 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Catch Supabase OAuth tokens and errors that confuse HashRouter */}
-          <Route path="/access_token=*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/error_description=*" element={<Navigate to="/dashboard" replace />} />
+          {/* Default fallback for confused routers */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>

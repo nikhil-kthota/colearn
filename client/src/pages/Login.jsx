@@ -34,21 +34,31 @@ const Login = () => {
     };
 
     const handleGoogleLogin = async () => {
+        console.log("Google Login button clicked");
         setLoading(true);
         try {
+            // Check for commonly misplaced keys
+            if (import.meta.env.VITE_SUPABASE_ANON_KEY?.startsWith('sb_')) {
+                console.warn("CRITICAL: Your Supabase Anon Key looks like a Stripe key. Please check your .env.production file.");
+            }
+
             const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
-            console.log("Attempting Google Login with redirect to:", redirectUrl);
+            console.log("Redirect URL being sent to Supabase:", redirectUrl);
             
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: redirectUrl
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    }
                 }
             });
             if (error) throw error;
         } catch (error) {
-            console.error("Google Login Error:", error);
-            alert(error.message);
+            console.error("FATAL: Google Login process failed:", error);
+            alert(`Login Error: ${error.message}. Check browser console for details.`);
         } finally {
             setLoading(false);
         }

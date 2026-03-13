@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, LogIn, Code2, BookOpen, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabase';
 
 const COLLAB_CODING_URL = import.meta.env.VITE_COLLAB_CODING_URL || 'http://localhost:5174';
 
 const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formData, onInputChange }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
 
     const handleCodingCreate = async () => {
@@ -75,6 +77,71 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             setLoading(false);
         }
     };
+    const handleLearningCreate = async () => {
+        const { groupId, groupName, groupKey } = formData.create;
+        setLoading(true);
+        try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) {
+                alert('You must be logged in to create a group.');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('collab_groups')
+                .insert([{ 
+                    group_id: groupId, 
+                    group_name: groupName, 
+                    group_key: groupKey,
+                    type: 'learning',
+                    created_by: authUser.id
+                }]);
+
+            if (error) {
+                if (error.code === '23505') {
+                    alert('Group ID already exists. Please choose a unique ID.');
+                } else {
+                    console.error('Supabase Error:', error);
+                }
+                return;
+            }
+
+            navigate(`/group/${groupId}`);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLearningJoin = async () => {
+        const { groupId, groupKey } = formData.join;
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('collab_groups')
+                .select('*')
+                .eq('group_id', groupId)
+                .single();
+
+            if (error || !data) {
+                alert('Group not found. Please check the Group ID.');
+                return;
+            }
+
+            if (data.group_key !== groupKey) {
+                alert('Incorrect Group Key (PIN).');
+                return;
+            }
+
+            navigate(`/group/${groupId}`);
+        } catch (err) {
+            console.error('Unexpected error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="main-action-card">
             <div className="card-left">
@@ -178,7 +245,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             </div>
                             <button
                                 className="submit-action-btn"
-                                onClick={activeTab === 'coding' ? handleCodingCreate : undefined}
+                                onClick={activeTab === 'coding' ? handleCodingCreate : handleLearningCreate}
                                 disabled={loading || !formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)}
                                 style={{
                                     opacity: (loading || !formData.create.groupName.trim() || !formData.create.groupId.trim() || !/^\d{4,5}$/.test(formData.create.groupKey)) ? 0.4 : 1,
@@ -253,7 +320,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                             <button
                                 className="submit-action-btn"
                                 disabled={loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)}
-                                onClick={activeTab === 'coding' ? handleCodingJoin : undefined}
+                                onClick={activeTab === 'coding' ? handleCodingJoin : handleLearningJoin}
                                 style={{
                                     opacity: (loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)) ? 0.4 : 1,
                                     cursor: (loading || !formData.join.groupId.trim() || !/^\d{4,5}$/.test(formData.join.groupKey)) ? 'not-allowed' : 'pointer'
