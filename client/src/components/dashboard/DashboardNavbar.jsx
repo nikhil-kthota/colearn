@@ -8,12 +8,19 @@ import {
     X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabase';
 
 const DashboardNavbar = ({ isDark, toggleTheme }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
     const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('userName');
+        navigate('/');
+    };
 
     const handleScrollTo = (id) => {
         const element = document.getElementById(id);
@@ -92,7 +99,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                                         <span>Profile</span>
                                     </button>
                                     <div className="menu-divider"></div>
-                                    <button className="menu-item logout" onClick={() => navigate('/')}>
+                                    <button className="menu-item logout" onClick={handleLogout}>
                                         <LogOut size={16} />
                                         <span>Logout</span>
                                     </button>
@@ -129,7 +136,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                                 <button onClick={() => navigate('/profile')}>
                                     <User size={16} style={{ marginRight: '8px' }} /> Profile
                                 </button>
-                                <button onClick={() => navigate('/')} className="logout">
+                                <button onClick={handleLogout} className="logout">
                                     <LogOut size={16} style={{ marginRight: '8px' }} /> Logout
                                 </button>
                             </div>
@@ -150,4 +157,3 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
 };
 
 export default DashboardNavbar;
-

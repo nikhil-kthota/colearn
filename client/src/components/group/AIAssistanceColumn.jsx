@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Send, Plus, ChevronUp, FileText, Cpu, ArrowLeft, Image as ImageIcon, Paperclip, X } from 'lucide-react';
-import { useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '../../supabase';
 
 const AIAssistanceColumn = () => {
+    const { id: groupId } = useParams();
     const [message, setMessage] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
@@ -12,15 +12,39 @@ const AIAssistanceColumn = () => {
     const [models, setModels] = useState(['Gemini 3 Flash', 'GPT-4o', 'Claude 3.5 Sonnet']);
     const [attachedImage, setAttachedImage] = useState(null);
     const [attachedFile, setAttachedFile] = useState(null);
+    const [groupFiles, setGroupFiles] = useState([]);
 
     const imageInputRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    const mockFiles = [
-        { id: 1, name: 'main.jsx' },
-        { id: 2, name: 'Group.css' },
-        { id: 3, name: 'index.html' }
-    ];
+    React.useEffect(() => {
+        fetchModels();
+        fetchGroupFiles();
+    }, [groupId]);
+
+    const fetchModels = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+            .from('user_ai_models')
+            .select('name, key')
+            .eq('user_id', user.id);
+
+        if (data && data.length > 0) {
+            const customModels = data.map(m => m.name);
+            setModels(['Gemini 3 Flash', 'GPT-4o', 'Claude 3.5 Sonnet', ...customModels]);
+        }
+    };
+
+    const fetchGroupFiles = async () => {
+        const { data } = await supabase
+            .from('group_files')
+            .select('file_name')
+            .eq('group_id', groupId);
+        
+        if (data) setGroupFiles(data);
+    };
 
     const handleSendMessage = (e) => {
         if (e) e.preventDefault();
@@ -72,9 +96,23 @@ const AIAssistanceColumn = () => {
         }
     };
 
-    const handleSaveModel = (e) => {
+    const handleSaveModel = async (e) => {
         e.preventDefault();
         if (newModelData.name.trim()) {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error } = await supabase
+                .from('user_ai_models')
+                .insert([{
+                    user_id: user.id,
+                    name: newModelData.name,
+                    key: newModelData.key
+                }]);
+
+            if (error) {
+                console.error('Error saving model:', error);
+                return;
+            }
+
             setModels(prev => [...prev, newModelData.name]);
             setSelectedModel(newModelData.name);
             setIsAddingModel(false);
@@ -139,23 +177,25 @@ const AIAssistanceColumn = () => {
 
                                             {isMenuOpen && (
                                                 <div className="ai-context-menu">
-                                                    <div className="menu-section">
-                                                        <div className="menu-section-title">Reference Files</div>
+                                    <div className="menu-section">
+                                                        <div className="menu-section-title">Reference Group Files</div>
                                                         <div className="menu-list">
-                                                            {mockFiles.map(file => (
+                                                            {groupFiles.length > 0 ? groupFiles.map((file, idx) => (
                                                                 <button
-                                                                    key={file.id}
+                                                                    key={idx}
                                                                     type="button"
                                                                     className="menu-option"
                                                                     onClick={() => {
-                                                                        setMessage(prev => prev + ` @${file.name} `);
+                                                                        setMessage(prev => prev + ` @${file.file_name} `);
                                                                         setIsMenuOpen(false);
                                                                     }}
                                                                 >
                                                                     <FileText size={14} />
-                                                                    {file.name}
+                                                                    {file.file_name}
                                                                 </button>
-                                                            ))}
+                                                            )) : (
+                                                                <div className="menu-empty-hint">No files in group</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

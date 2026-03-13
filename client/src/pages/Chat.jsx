@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import GroupNavbar from '../components/group/GroupNavbar';
+import { supabase } from '../supabase';
 import '../styles/Chat.css';
 
 const Chat = ({ isDark, toggleTheme }) => {
@@ -78,32 +79,77 @@ const Chat = ({ isDark, toggleTheme }) => {
         ]
     });
 
-    const activeChat = conversations.find(c => c.id === activeChatId);
-
-    const scrollToBottom = () => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+    const [loading, setLoading] = useState(true);
+    const [currentGroupName, setCurrentGroupName] = useState('Loading...');
 
     useEffect(() => {
-        scrollToBottom();
-    }, [chatMessages, activeChatId]);
+        fetchGroupDetails();
+        fetchMessages();
+        const subscription = subscribeToMessages();
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [id, activeChatId]);
 
-    const handleSendMessage = (e) => {
+    const fetchGroupDetails = async () => {
+        const { data, error } = await supabase
+            .from('collab_groups')
+            .select('group_name')
+            .eq('group_id', id)
+            .single();
+        if (data) setCurrentGroupName(data.group_name);
+    };
+
+    const fetchMessages = async () => {
+        const { data, error } = await supabase
+            .from('group_messages')
+            .select('*')
+            .eq('group_id', id)
+            .order('created_at', { ascending: true });
+
+        if (data) {
+            // Transform data if needed or group by channel (placeholder for now)
+            setChatMessages({ 'general': data });
+        }
+        setLoading(false);
+    };
+
+    const subscribeToMessages = () => {
+        return supabase
+            .channel('public:group_messages')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'group_messages',
+                filter: `group_id=eq.${id}`
+            }, payload => {
+                setChatMessages(prev => ({
+                    ...prev,
+                    ['general']: [...(prev['general'] || []), payload.new]
+                }));
+            })
+            .subscribe();
+    };
+
+    const handleSendMessage = async (e) => {
         e.preventDefault();
         if (message.trim() || attachedImage || attachedFile) {
+            const { data: { user } } = await supabase.auth.getUser();
+            
             const newMessage = {
-                id: (chatMessages[activeChatId]?.length || 0) + 1,
-                user: members[0], // Current user
+                group_id: id,
+                user_id: user.id,
+                user_name: user.user_metadata?.full_name || user.email,
                 text: message,
-                image: attachedImage,
-                file: attachedFile,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                // image_url: attachedImage, // Would upload to storage first
+                // file_url: attachedFile, // Would upload to storage first
             };
 
-            setChatMessages(prev => ({
-                ...prev,
-                [activeChatId]: [...(prev[activeChatId] || []), newMessage]
-            }));
+            const { error } = await supabase
+                .from('group_messages')
+                .insert([newMessage]);
+
+            if (error) console.error('Error sending message:', error);
 
             setMessage('');
             setAttachedImage(null);
@@ -222,8 +268,7 @@ const Chat = ({ isDark, toggleTheme }) => {
         });
     };
 
-    const groupNames = { '1': 'React Micro-Frontend', '2': 'System Design Patterns' };
-    const currentGroupName = groupNames[id] || "Collaboration Group";
+    // Removed static groupNames mapping
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -327,25 +372,26 @@ const Chat = ({ isDark, toggleTheme }) => {
                     <div className="chat-scroller">
                         <div className="chat-messages-list">
                             {(chatMessages[activeChatId] || []).map((msg) => (
-                                <div key={msg.id} className={`chat-message ${msg.user.id === members[0].id ? 'mine' : ''}`}>
-                                    <div className="message-avatar" style={{ backgroundColor: msg.user.color }}>{msg.user.avatar}</div>
+                                <div key={msg.id} className={`chat-message ${msg.user_id === members[0].id ? 'mine' : ''}`}>
+                                    <div className="message-avatar" style={{ backgroundColor: '#ccc' }}>
+                                        {msg.user_name?.substring(0, 2).toUpperCase()}
+                                    </div>
                                     <div className="message-body">
                                         <div className="message-header">
-                                            <span className="author">{msg.user.name}</span>
-                                            <span className="timestamp">{msg.time}</span>
+                                            <span className="author">{msg.user_name}</span>
+                                            <span className="timestamp">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                         </div>
                                         <div className="message-bubble">
-                                            {msg.image && (
+                                            {msg.image_url && (
                                                 <div className="message-image">
-                                                    <img src={msg.image} alt="Uploaded" />
+                                                    <img src={msg.image_url} alt="Uploaded" />
                                                 </div>
                                             )}
-                                            {msg.file && (
+                                            {msg.file_url && (
                                                 <div className="message-file">
                                                     <FileText size={18} />
                                                     <div className="msg-file-info">
-                                                        <span className="msg-file-name">{msg.file.name}</span>
-                                                        <span className="msg-file-size">{msg.file.size}</span>
+                                                        <span className="msg-file-name">File Attachment</span>
                                                     </div>
                                                 </div>
                                             )}

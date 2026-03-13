@@ -4,26 +4,32 @@ import GroupNavbar from '../components/group/GroupNavbar';
 import FilesColumn from '../components/group/FilesColumn';
 import FileViewerColumn from '../components/group/FileViewerColumn';
 import AIAssistanceColumn from '../components/group/AIAssistanceColumn';
+import { supabase } from '../supabase';
 import '../styles/Group.css';
 
 const Group = ({ isDark, toggleTheme }) => {
     const { id } = useParams();
     const [isFilesCollapsed, setIsFilesCollapsed] = useState(false);
+    const [groupName, setGroupName] = useState('Loading...');
+    const [selectedFile, setSelectedFile] = useState(null);
 
-
-    const groupNames = {
-        '1': 'React Micro-Frontend',
-        '2': 'System Design Patterns',
-        '3': 'Python for Data Science',
-        '4': 'Advanced Machine Learning'
-    };
-
-    const currentGroupName = groupNames[id] || "Collaboration Group";
+    React.useEffect(() => {
+        const fetchGroup = async () => {
+            const { data, error } = await supabase
+                .from('collab_groups')
+                .select('group_name')
+                .eq('group_id', id)
+                .single();
+            
+            if (data) setGroupName(data.group_name);
+        };
+        fetchGroup();
+    }, [id]);
 
     return (
         <div className="group-layout">
             <GroupNavbar
-                groupName={currentGroupName}
+                groupName={groupName}
                 isDark={isDark}
                 toggleTheme={toggleTheme}
             />
@@ -32,8 +38,10 @@ const Group = ({ isDark, toggleTheme }) => {
                 <FilesColumn
                     isCollapsed={isFilesCollapsed}
                     toggleCollapse={() => setIsFilesCollapsed(!isFilesCollapsed)}
+                    onFileSelect={setSelectedFile}
+                    selectedFile={selectedFile}
                 />
-                <FileViewerColumn />
+                <FileViewerColumn selectedFile={selectedFile} />
                 <AIAssistanceColumn />
             </main>
         </div>

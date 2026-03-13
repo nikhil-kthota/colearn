@@ -37,6 +37,13 @@ function App() {
       setLoading(false);
     });
 
+    // Handle OAuth redirection fragments if the HashRouter doesn't catch them
+    // Supabase returns /#access_token=... but HashRouter expects /#/...
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        // Just let Supabase handle the token, and we redirect to a clean URL
+        window.location.hash = '#/dashboard';
+    }
+
     return () => subscription.unsubscribe();
   }, []);
 

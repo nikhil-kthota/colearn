@@ -6,6 +6,7 @@ import {
     LogOut
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '../../supabase';
 
 const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
     const { id } = useParams();
@@ -13,6 +14,11 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
     const [isMembersOpen, setIsMembersOpen] = useState(false);
     const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('userName');
+        navigate('/');
+    };
 
     const members = [
         { id: 1, name: "John Doe (You)", role: "Admin" },
@@ -92,7 +98,7 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                                 <span>Profile</span>
                             </button>
                             <div className="dropdown-divider"></div>
-                            <button className="dropdown-item logout" onClick={() => navigate('/')}>
+                            <button className="dropdown-item logout" onClick={handleLogout}>
                                 <LogOut size={16} />
                                 <span>Logout</span>
                             </button>

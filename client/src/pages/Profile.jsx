@@ -43,19 +43,28 @@ const Profile = ({ isDark, toggleTheme }) => {
                 return;
             }
 
-            // Fetch groups stats (optional, but good for completeness)
+            // Fetch groups created by this user
             const { count: groupsCreated } = await supabase
                 .from('collab_groups')
                 .select('*', { count: 'exact', head: true })
-                .eq('type', 'coding'); // Simplification
+                .eq('created_by', authUser.id);
+
+            // Fetch AI models for this user
+            const { data: aiModels, error: modelsError } = await supabase
+                .from('user_ai_models')
+                .select('*')
+                .eq('user_id', authUser.id)
+                .order('created_at', { ascending: false });
+
+            if (modelsError) console.error('Error fetching AI models:', modelsError);
 
             const userData = {
                 name: authUser.user_metadata?.full_name || 'User',
                 email: authUser.email,
                 joinedDate: new Date(authUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
                 groupsCreated: groupsCreated || 0,
-                groupsJoined: 0, // Placeholder
-                models: [] // Placeholder for now
+                groupsJoined: 0, // This would require a junction table like 'group_members'
+                models: aiModels || []
             };
 
             setUser(userData);
@@ -80,9 +89,21 @@ const Profile = ({ isDark, toggleTheme }) => {
         setIsEditing(!isEditing);
     };
 
-    const handleSave = () => {
-        setUser({ ...formData });
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: { full_name: formData.name }
+            });
+
+            if (error) throw error;
+
+            setUser({ ...formData });
+            setIsEditing(false);
+            alert('Profile updated successfully!');
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            alert('Failed to update profile.');
+        }
     };
 
     const handleChange = (e) => {
@@ -111,41 +132,80 @@ const Profile = ({ isDark, toggleTheme }) => {
         setEditingModelData({ name: '', key: '' });
     };
 
-    const saveModelEdit = (id) => {
-        setUser(prev => ({
-            ...prev,
-            models: prev.models.map(m =>
-                m.id === id ? { ...m, name: editingModelData.name, key: editingModelData.key } : m
-            )
-        }));
-        setEditingModelId(null);
-    };
+    const saveModelEdit = async (id) => {
+        try {
+            const { error } = await supabase
+                .from('user_ai_models')
+                .update({ 
+                    name: editingModelData.name, 
+                    key: editingModelData.key 
+                })
+                .eq('id', id);
 
-    const handleAddModel = () => {
-        if (!newModelData.name.trim() || !newModelData.key.trim()) return;
+            if (error) throw error;
 
-        const newModel = {
-            id: Date.now(),
-            name: newModelData.name,
-            key: newModelData.key
-        };
-
-        setUser(prev => ({
-            ...prev,
-            models: [newModel, ...prev.models]
-        }));
-
-        setNewModelData({ name: '', key: '' });
-        setIsAddingModel(false);
-        setShowNewModelKey(false);
-    };
-
-    const handleDeleteModel = (id) => {
-        if (window.confirm("Are you sure you want to delete this model?")) {
             setUser(prev => ({
                 ...prev,
-                models: prev.models.filter(m => m.id !== id)
+                models: prev.models.map(m =>
+                    m.id === id ? { ...m, name: editingModelData.name, key: editingModelData.key } : m
+                )
             }));
+            setEditingModelId(null);
+        } catch (err) {
+            console.error('Error updating model:', err);
+            alert('Failed to update model.');
+        }
+    };
+
+    const handleAddModel = async () => {
+        if (!newModelData.name.trim() || !newModelData.key.trim()) return;
+
+        try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            const { data, error } = await supabase
+                .from('user_ai_models')
+                .insert([{
+                    user_id: authUser.id,
+                    name: newModelData.name,
+                    key: newModelData.key
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setUser(prev => ({
+                ...prev,
+                models: [data, ...prev.models]
+            }));
+
+            setNewModelData({ name: '', key: '' });
+            setIsAddingModel(false);
+            setShowNewModelKey(false);
+        } catch (err) {
+            console.error('Error adding model:', err);
+            alert('Failed to add model.');
+        }
+    };
+
+    const handleDeleteModel = async (id) => {
+        if (window.confirm("Are you sure you want to delete this model?")) {
+            try {
+                const { error } = await supabase
+                    .from('user_ai_models')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                setUser(prev => ({
+                    ...prev,
+                    models: prev.models.filter(m => m.id !== id)
+                }));
+            } catch (err) {
+                console.error('Error deleting model:', err);
+                alert('Failed to delete model.');
+            }
         }
     };
 
@@ -155,9 +215,31 @@ const Profile = ({ isDark, toggleTheme }) => {
 
     const handleDeleteClick = () => setShowDeleteConfirm(true);
     const handleCancelDelete = () => setShowDeleteConfirm(false);
-    const handleConfirmDelete = () => {
-        alert("Account deletion logic goes here");
-        setShowDeleteConfirm(false);
+    const handleConfirmDelete = async () => {
+        try {
+            // In a real app, you might want to delete all user data first
+            // or use a Supabase Edge Function to handle account deletion securely.
+            // Directly deleting from auth.users requires admin privileges,
+            // so we typically handle this by calling a database function or edge function.
+            
+            // For now, let's assume we have a way to trigger deletion or just sign out for demo.
+            const { error } = await supabase.rpc('delete_user_account'); // Custom RPC function
+            
+            if (error) {
+                // If RPC doesn't exist, fallback to warning the user
+                console.warn('RPC delete_user_account not found. Using client-side sign out as placeholder.');
+                await supabase.auth.signOut();
+                navigate('/');
+                return;
+            }
+
+            await supabase.auth.signOut();
+            setShowDeleteConfirm(false);
+            navigate('/');
+        } catch (err) {
+            console.error('Error deleting account:', err);
+            alert('An error occurred. Please contact support to delete your account.');
+        }
     };
 
     return (

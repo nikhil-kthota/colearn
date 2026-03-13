@@ -3,6 +3,7 @@ import DashboardNavbar from '../components/dashboard/DashboardNavbar';
 import ActionTabs from '../components/dashboard/ActionTabs';
 import ActionCard from '../components/dashboard/ActionCard';
 import MyGroups from '../components/dashboard/MyGroups';
+import { supabase } from '../supabase';
 import '../styles/UserHome.css';
 
 const UserHome = ({ isDark, toggleTheme }) => {
@@ -10,10 +11,23 @@ const UserHome = ({ isDark, toggleTheme }) => {
     const [actionType, setActionType] = useState('join'); // 'join' or 'create'
     const [progress, setProgress] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [user, setUser] = useState({ name: 'User' });
     const [formData, setFormData] = useState({
         create: { groupName: '', groupId: '', groupKey: '' },
         join: { groupId: '', groupKey: '' }
     });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                setUser({
+                    name: authUser.user_metadata?.full_name || authUser.email.split('@')[0]
+                });
+            }
+        };
+        fetchUser();
+    }, []);
 
     const handleInputChange = (e, type) => {
         const { name, value } = e.target;
@@ -69,7 +83,7 @@ const UserHome = ({ isDark, toggleTheme }) => {
             <main className="user-dashboard-content">
                 <section className="dashboard-hero" id="dashboard-hero">
                     <div className="hero-text">
-                        <h1>Welcome back, John!</h1>
+                        <h1>Welcome back, {user.name}!</h1>
                         <p>What would you like to build or learn today?</p>
                     </div>
                 </section>

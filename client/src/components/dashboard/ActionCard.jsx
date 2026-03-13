@@ -11,13 +11,20 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
         const { groupId, groupName, groupKey } = formData.create;
         setLoading(true);
         try {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) {
+                alert('You must be logged in to create a group.');
+                return;
+            }
+
             const { error } = await supabase
                 .from('collab_groups')
                 .insert([{ 
                     group_id: groupId, 
                     group_name: groupName, 
                     group_key: groupKey,
-                    type: 'coding'
+                    type: 'coding',
+                    created_by: authUser.id
                 }]);
 
             if (error) {
