@@ -1,5 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { 
+    X, 
+    FileText, 
+    Plus, 
+    Image as ImageIcon, 
+    Paperclip, 
+    ChevronUp, 
+    Cpu, 
+    ArrowLeft, 
+    Send,
+    Loader2
+} from 'lucide-react';
 import { supabase } from '../../supabase';
 
 const AIAssistanceColumn = () => {
