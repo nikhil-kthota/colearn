@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff, Plus, LogOut } from 'lucide-react';
+import { Edit2, Shield, Settings, Trash2, ArrowLeft, Sun, Moon, Check, X, Eye, EyeOff, Plus, LogOut, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import '../styles/Profile.css';

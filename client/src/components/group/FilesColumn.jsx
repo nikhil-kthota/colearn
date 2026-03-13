@@ -1,3 +1,4 @@
+import React, { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2 } from 'lucide-react';
