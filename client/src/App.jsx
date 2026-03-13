@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase'
 import LandingPage from './pages/LandingPage'
 import Signup from './pages/Signup'
@@ -19,36 +19,25 @@ function App() {
   }, [isDark]);
 
   useEffect(() => {
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.user_metadata?.full_name) {
-        localStorage.setItem('userName', session.user.user_metadata.full_name);
+    // 1. Initial session check
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      if (initialSession?.user?.user_metadata?.full_name) {
+        localStorage.setItem('userName', initialSession.user.user_metadata.full_name);
       }
       setLoading(false);
     });
 
-    // Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user?.user_metadata?.full_name) {
-        localStorage.setItem('userName', session.user.user_metadata.full_name);
+    // 2. Auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      if (currentSession?.user?.user_metadata?.full_name) {
+        localStorage.setItem('userName', currentSession.user.user_metadata.full_name);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  // OAuth Fragment Handler
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token=')) {
-        // Redirect to root; our conditional logic will then pick up the session
-        setTimeout(() => {
-            window.location.hash = '#/';
-        }, 100);
-    }
   }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
@@ -67,11 +56,17 @@ function App() {
     return children;
   };
 
+  // The professional basename for GitHub Pages
+  const basename = import.meta.env.BASE_URL;
+
   return (
-    <Router>
+    <Router basename={basename}>
       <div className="app-wrapper">
         <Routes>
-          {/* Dynamic Home Route */}
+          {/* 
+            DYNAMIC HOME: 
+            One route, two different personalities depending on auth.
+          */}
           <Route path="/" element={
             loading ? null : (
               session ? 
@@ -92,7 +87,7 @@ function App() {
             </PublicRoute>
           } />
           
-          {/* Keep /dashboard for compatibility, but it just shows UserHome */}
+          {/* Legacy Redirect */}
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
           <Route path="/profile" element={
@@ -111,6 +106,7 @@ function App() {
             </ProtectedRoute>
           } />
           
+          {/* Standard Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
