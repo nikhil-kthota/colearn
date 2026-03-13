@@ -43,16 +43,23 @@ const Signup = () => {
     };
 
     const handleGoogleSignup = async () => {
+        setLoading(true);
         try {
+            const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+            console.log("Attempting Google Signup with redirect to:", redirectUrl);
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + window.location.pathname
+                    redirectTo: redirectUrl
                 }
             });
             if (error) throw error;
         } catch (error) {
+            console.error("Google Signup Error:", error);
             alert(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -100,7 +107,12 @@ const Signup = () => {
 
                 <div className="divider">OR</div>
 
-                <button className="btn-google" onClick={handleGoogleSignup}>
+                <button 
+                    type="button" 
+                    className="btn-google" 
+                    onClick={handleGoogleSignup} 
+                    disabled={loading}
+                >
                     <Mail size={18} />
                     Sign up with Google
                 </button>

@@ -34,16 +34,23 @@ const Login = () => {
     };
 
     const handleGoogleLogin = async () => {
+        setLoading(true);
         try {
+            const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+            console.log("Attempting Google Login with redirect to:", redirectUrl);
+            
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + window.location.pathname
+                    redirectTo: redirectUrl
                 }
             });
             if (error) throw error;
         } catch (error) {
+            console.error("Google Login Error:", error);
             alert(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -90,7 +97,12 @@ const Login = () => {
 
                 <div className="divider">OR</div>
 
-                <button className="btn-google" onClick={handleGoogleLogin}>
+                <button 
+                    type="button" 
+                    className="btn-google" 
+                    onClick={handleGoogleLogin} 
+                    disabled={loading}
+                >
                     <Mail size={18} />
                     Login with Google
                 </button>
