@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Users, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import '../../styles/MyGroups.css';
@@ -85,8 +85,14 @@ const MyGroups = () => {
                             <div className="group-content-wrapper">
                                 <h3 className="group-name">{group.name}</h3>
                                 <div className="group-details">
-                                    <span className="meta-item">{group.members} members</span>
-                                    <span className="meta-item">Used {group.lastUsed}</span>
+                                    <span className="meta-item">
+                                        <Users size={14} />
+                                        {group.members} members
+                                    </span>
+                                    <span className="meta-item">
+                                        <Calendar size={14} />
+                                        Created {group.lastUsed}
+                                    </span>
                                 </div>
                             </div>
                         </div>
