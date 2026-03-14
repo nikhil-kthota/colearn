@@ -85,14 +85,8 @@ const MyGroups = () => {
                             <div className="group-content-wrapper">
                                 <h3 className="group-name">{group.name}</h3>
                                 <div className="group-details">
-                                    <span className="meta-item">
-                                        <Users size={14} />
-                                        {group.members} members
-                                    </span>
-                                    <span className="meta-item">
-                                        <Calendar size={14} />
-                                        Created {group.lastUsed}
-                                    </span>
+                                    <span className="meta-item">{group.members} members</span>
+                                    <span className="meta-item">Used {group.lastUsed}</span>
                                 </div>
                             </div>
                         </div>
