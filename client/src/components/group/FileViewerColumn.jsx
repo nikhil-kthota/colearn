@@ -1,3 +1,4 @@
+import React from 'react';
 import { Download, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '../../supabase';
 
