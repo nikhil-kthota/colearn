@@ -17,38 +17,6 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
         }
     }, [selectedFile]);
 
-    const handleDelete = async () => {
-        if (!selectedFile || selectedFile.isOptimistic) return;
-        if (!window.confirm('Are you sure you want to delete this file? This cannot be undone.')) return;
-
-        setIsDeleting(true);
-        try {
-            // 1. Delete from storage
-            const { error: storageError } = await supabase.storage
-                .from('group-assets')
-                .remove([selectedFile.file_path]);
-
-            if (storageError) {
-                console.error('Storage Delete Error:', storageError);
-            }
-
-            // 2. Delete from database
-            const { error: dbError } = await supabase
-                .from('group_files')
-                .delete()
-                .eq('id', selectedFile.id);
-
-            if (dbError) throw dbError;
-
-            if (onDelete) onDelete();
-        } catch (err) {
-            console.error('Delete error:', err);
-            alert('Error deleting file: ' + err.message);
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
     const renderPreview = () => {
         if (!selectedFile) return null;
         
@@ -112,48 +80,37 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
 
     return (
         <div className="group-column viewer-column">
-            <div className="column-header">FILE PREVIEW</div>
-            <div className="column-content viewer-content-area">
+            <div className="column-header flex-between" style={{ alignItems: 'center' }}>
+                <div className="preview-header-title">
+                    {selectedFile ? selectedFile.file_name : 'FILE PREVIEW'}
+                </div>
+                
+                {selectedFile && publicUrl && (
+                    <div className="preview-header-actions">
+                        <a 
+                            href={publicUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="header-action-link"
+                        >
+                            <ExternalLink size={16} />
+                            <span>Open</span>
+                        </a>
+                        <a 
+                            href={`${publicUrl}?download=`} 
+                            download={selectedFile.file_name}
+                            className="header-action-link"
+                        >
+                            <Download size={16} />
+                            <span>Download</span>
+                        </a>
+                    </div>
+                )}
+            </div>
+            <div className="column-content viewer-content-area no-padding">
                 {selectedFile ? (
-                    <div className="file-preview-details fade-in">
+                    <div className="file-preview-details full-height fade-in">
                         {renderPreview()}
-                        
-                        <h2 className="preview-title" title={selectedFile.file_name}>
-                            {selectedFile.file_name}
-                        </h2>
-                        
-                        <div className="preview-stats">
-                            <span>Type: {selectedFile.file_type || 'Unknown'}</span>
-                            <span>Size: {(selectedFile.file_size / 1024).toFixed(1)} KB</span>
-                        </div>
-                        
-                        <div className="preview-actions-grid">
-                            <a 
-                                href={publicUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className={`action-btn-large primary ${!publicUrl ? 'disabled' : ''}`}
-                            >
-                                <ExternalLink size={18} />
-                                Open
-                            </a>
-                            <a 
-                                href={publicUrl ? `${publicUrl}?download=` : '#'} 
-                                download={selectedFile.file_name}
-                                className={`action-btn-large secondary ${!publicUrl ? 'disabled' : ''}`}
-                            >
-                                <Download size={18} />
-                                Download
-                            </a>
-                            <button 
-                                onClick={handleDelete}
-                                disabled={isDeleting || selectedFile.isOptimistic}
-                                className="action-btn-large danger-btn"
-                            >
-                                {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                                Delete
-                            </button>
-                        </div>
                     </div>
                 ) : (
                     <div className="empty-preview">

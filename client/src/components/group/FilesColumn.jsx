@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2, Trash2 } from 'lucide-react';
 
 const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, refreshTrigger }) => {
     const { id: groupId } = useParams();
@@ -9,6 +9,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
     const [files, setFiles] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [uploading, setUploading] = React.useState(false);
+    const [deletingId, setDeletingId] = React.useState(null);
 
     React.useEffect(() => {
         if (groupId) {
@@ -115,6 +116,61 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
         if (updatedDb) {
             fetchFiles();
         }
+    }; // Close handleFileChange
+
+    const handleFileDelete = async (e, file) => {
+        e.stopPropagation(); // prevent selecting the file
+        if (file.isOptimistic) return;
+        if (!window.confirm('Are you sure you want to delete this file?')) return;
+
+        setDeletingId(file.id);
+        try {
+            // 1. Storage remove
+            const { error: storageError } = await supabase.storage
+                .from('group-assets')
+                .remove([file.file_path]);
+
+            if (storageError) console.error('Storage Delete Error:', storageError);
+
+            // 2. Database remove
+            const { error: dbError } = await supabase
+                .from('group_files')
+                .delete()
+                .eq('id', file.id);
+
+            if (dbError) throw dbError;
+
+            // Trigger global refresh (if the deleted file was the one currently viewed, we clear it here)
+            // But since Group.jsx passes down a `handleFileDelete` for the viewer, we can just do a fetch here locally first.
+            
+            // Auto close preview if they delete the currently viewing file
+            if (selectedFile?.id === file.id) {
+                onFileSelect(null);
+            }
+            fetchFiles(); 
+        } catch (err) {
+            console.error('Delete error:', err);
+            alert('Error deleting file: ' + err.message);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const handleDownload = (e, file) => {
+        e.stopPropagation(); // prevent selecting the file
+        if (file.isOptimistic) return;
+        
+        const { data } = supabase.storage
+            .from('group-assets')
+            .getPublicUrl(file.file_path);
+            
+        // Trigger a download programmatically
+        const a = document.createElement('a');
+        a.href = `${data.publicUrl}?download=`;
+        a.download = file.file_name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     };
 
     return (
@@ -186,6 +242,25 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                                         <div className="file-info">
                                             <span className="file-name-text" title={file.file_name}>{file.file_name}</span>
                                             <span className="file-meta">{(file.file_size / 1024).toFixed(1)} KB</span>
+                                        </div>
+                                        
+                                        <div className="file-item-actions">
+                                            <button 
+                                                className="file-action-btn file-action-download" 
+                                                onClick={(e) => handleDownload(e, file)}
+                                                title="Download"
+                                                disabled={file.isOptimistic}
+                                            >
+                                                <Download size={14} />
+                                            </button>
+                                            <button 
+                                                className="file-action-btn file-action-delete" 
+                                                onClick={(e) => handleFileDelete(e, file)}
+                                                title="Delete"
+                                                disabled={file.isOptimistic || deletingId === file.id}
+                                            >
+                                                {deletingId === file.id ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
+                                            </button>
                                         </div>
                                     </div>
                                 ))}

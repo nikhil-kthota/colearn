@@ -1335,3 +1335,125 @@
     pointer-events: none;
     cursor: default;
 }
+
+/* File Item Actions inside Files Column */
+.file-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-left: auto;
+    opacity: 0.3;
+    transition: all 0.2s;
+}
+
+.file-item-card:hover .file-item-actions {
+    opacity: 1;
+}
+
+.file-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.3rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+[data-theme='light'] .file-action-btn {
+    color: var(--color-deep-blue);
+}
+
+.file-action-btn:hover {
+    background-color: rgba(128, 128, 128, 0.1);
+}
+
+.file-action-download:hover {
+    color: var(--color-neon-blue);
+}
+
+[data-theme='light'] .file-action-download:hover {
+    color: var(--color-ocean-blue);
+    background-color: rgba(14, 165, 233, 0.1);
+}
+
+.file-action-delete:hover {
+    color: #ef4444;
+}
+
+[data-theme='light'] .file-action-delete:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.file-action-btn:disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* File Viewer Header Repurposed UI */
+.preview-header-title {
+    font-size: 0.9rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+
+[data-theme='light'] .preview-header-title {
+    color: var(--color-deep-blue);
+}
+
+.preview-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-action-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-neon-blue);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    opacity: 0.8;
+}
+
+.header-action-link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+[data-theme='light'] .header-action-link {
+    color: var(--color-ocean-blue);
+}
+
+.column-content.no-padding {
+    padding: 0;
+}
+
+.file-preview-details.full-height {
+    height: 100%;
+}
+
+.preview-media-container.pdf-container,
+.preview-media-pdf {
+    height: 100%;
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.preview-media-container.pdf-container {
+    background: transparent;
+}
