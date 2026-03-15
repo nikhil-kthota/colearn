@@ -12,6 +12,12 @@ const Group = ({ isDark, toggleTheme }) => {
     const [isFilesCollapsed, setIsFilesCollapsed] = useState(false);
     const [groupName, setGroupName] = useState('Loading...');
     const [selectedFile, setSelectedFile] = useState(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const handleFileDelete = () => {
+        setSelectedFile(null);
+        setRefreshTrigger(prev => prev + 1);
+    };
 
     React.useEffect(() => {
         const fetchGroup = async () => {
@@ -40,8 +46,9 @@ const Group = ({ isDark, toggleTheme }) => {
                     toggleCollapse={() => setIsFilesCollapsed(!isFilesCollapsed)}
                     onFileSelect={setSelectedFile}
                     selectedFile={selectedFile}
+                    refreshTrigger={refreshTrigger}
                 />
-                <FileViewerColumn selectedFile={selectedFile} />
+                <FileViewerColumn selectedFile={selectedFile} onDelete={handleFileDelete} />
                 <AIAssistanceColumn />
             </main>
         </div>

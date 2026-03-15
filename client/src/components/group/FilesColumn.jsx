@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2 } from 'lucide-react';
 
-const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile }) => {
+const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, refreshTrigger }) => {
     const { id: groupId } = useParams();
     const fileInputRef = useRef(null);
     const [files, setFiles] = React.useState([]);
@@ -14,7 +14,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile }
         if (groupId) {
             fetchFiles();
         }
-    }, [groupId]);
+    }, [groupId, refreshTrigger]);
 
     const fetchFiles = async () => {
         setLoading(true);
