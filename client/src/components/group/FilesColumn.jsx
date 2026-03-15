@@ -18,14 +18,23 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile }
 
     const fetchFiles = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from('group_files')
-            .select('*')
-            .eq('group_id', groupId)
-            .order('created_at', { ascending: false });
+        try {
+            const { data, error } = await supabase
+                .from('group_files')
+                .select('*')
+                .eq('group_id', groupId)
+                .order('created_at', { ascending: false });
 
-        if (data) setFiles(data);
-        setLoading(false);
+            if (error) {
+                console.error('Error fetching files. Table might not exist:', error);
+            } else if (data) {
+                setFiles(data);
+            }
+        } catch (err) {
+            console.error('Unexpected error fetching files:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleUploadClick = () => {
@@ -37,11 +46,33 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile }
         if (selectedFiles.length === 0) return;
 
         setUploading(true);
-        const { data: { user } } = await supabase.auth.getUser();
+        
+        let currentUserContext = null;
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            currentUserContext = user;
+        } catch(err) {
+            console.warn('Could not get user for upload context', err);
+        }
 
-        for (const file of selectedFiles) {
+        const newFiles = Array.from(selectedFiles);
+        let updatedDb = false;
+
+        for (const file of newFiles) {
             const filePath = `${groupId}/${Date.now()}_${file.name}`;
             
+            // Optimistic UI Update
+            const optimisticFile = {
+                id: Date.now() + Math.random(),
+                file_name: file.name,
+                file_size: file.size,
+                file_type: file.type,
+                file_path: filePath,
+                group_id: groupId,
+                isOptimistic: true
+            };
+            setFiles(prev => [optimisticFile, ...prev]);
+
             // 1. Upload to Storage
             const { error: uploadError } = await supabase.storage
                 .from('group-assets')
@@ -49,26 +80,41 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile }
 
             if (uploadError) {
                 console.error('Upload Error:', uploadError);
+                alert(`⚠️ Storage Error: Could not upload "${file.name}".\nPlease ensure you have created a public bucket named "group-assets" in Supabase.`);
+                // Remove optimistic file on failure
+                setFiles(prev => prev.filter(f => f.id !== optimisticFile.id));
                 continue;
             }
 
             // 2. Log in Database
-            const { error: dbError } = await supabase
-                .from('group_files')
-                .insert([{
-                    group_id: groupId,
-                    file_name: file.name,
-                    file_path: filePath,
-                    file_size: file.size,
-                    file_type: file.type,
-                    uploaded_by: user.id
-                }]);
+            if (currentUserContext) {
+                const { error: dbError } = await supabase
+                    .from('group_files')
+                    .insert([{
+                        group_id: groupId,
+                        file_name: file.name,
+                        file_path: filePath,
+                        file_size: file.size,
+                        file_type: file.type,
+                        uploaded_by: currentUserContext.id
+                    }]);
 
-            if (dbError) console.error('DB Error:', dbError);
+                if (dbError) {
+                    console.error('DB Error:', dbError);
+                    alert(`⚠️ Database Error: File uploaded to storage, but could not save record.\nPlease ensure you have created the "group_files" table.`);
+                } else {
+                    updatedDb = true;
+                }
+            }
         }
 
         setUploading(false);
-        fetchFiles();
+        // Reset input so same file can be uploaded again if needed
+        e.target.value = '';
+        
+        if (updatedDb) {
+            fetchFiles();
+        }
     };
 
     return (
