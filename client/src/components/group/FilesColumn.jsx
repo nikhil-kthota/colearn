@@ -10,12 +10,33 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
     const [loading, setLoading] = React.useState(true);
     const [uploading, setUploading] = React.useState(false);
     const [deletingId, setDeletingId] = React.useState(null);
+    const [isAdmin, setIsAdmin] = React.useState(false);
 
     React.useEffect(() => {
         if (groupId) {
             fetchFiles();
+            checkAdminStatus();
         }
     }, [groupId, refreshTrigger]);
+
+    const checkAdminStatus = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: groupData } = await supabase
+                .from('collab_groups')
+                .select('created_by')
+                .eq('group_id', groupId)
+                .single();
+
+            if (groupData?.created_by === user.id) {
+                setIsAdmin(true);
+            }
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+        }
+    };
 
     const fetchFiles = async () => {
         setLoading(true);
@@ -253,14 +274,16 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                                             >
                                                 <Download size={14} />
                                             </button>
-                                            <button 
-                                                className="file-action-btn file-action-delete" 
-                                                onClick={(e) => handleFileDelete(e, file)}
-                                                title="Delete"
-                                                disabled={file.isOptimistic || deletingId === file.id}
-                                            >
-                                                {deletingId === file.id ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
-                                            </button>
+                                            {isAdmin && (
+                                                <button 
+                                                    className="file-action-btn file-action-delete" 
+                                                    onClick={(e) => handleFileDelete(e, file)}
+                                                    title="Delete"
+                                                    disabled={file.isOptimistic || deletingId === file.id}
+                                                >
+                                                    {deletingId === file.id ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
