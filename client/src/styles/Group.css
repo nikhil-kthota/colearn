@@ -902,7 +902,7 @@
 
 
 @media (max-width: 1024px) {
-    .room-main-container {
+    .group-main-container {
         grid-template-columns: 250px 1fr 400px;
     }
 }
@@ -989,8 +989,8 @@
 
 @media (max-width: 900px) {
 
-    .room-main-container,
-    .room-main-container.files-collapsed {
+    .group-main-container,
+    .group-main-container.files-collapsed {
         display: flex !important;
         flex-direction: column !important;
         grid-template-columns: 1fr !important;
@@ -999,7 +999,7 @@
         overflow-y: visible !important;
     }
 
-    .room-column {
+    .group-column {
         width: 100% !important;
         height: auto !important;
         min-height: 350px !important;
@@ -1025,7 +1025,7 @@
         min-height: 600px !important;
     }
 
-    .room-layout {
+    .group-layout {
         overflow-y: auto !important;
     }
 
