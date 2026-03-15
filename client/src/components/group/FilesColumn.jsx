@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2, Trash2, Download } from 'lucide-react';
 
 const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, refreshTrigger }) => {
     const { id: groupId } = useParams();
