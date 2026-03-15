@@ -42,6 +42,23 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
                     )}
                 </div>
             );
+        } else if (
+            type.includes('wordprocessingml') || 
+            type.includes('msword') || 
+            type.includes('presentationml') || 
+            type.includes('ms-powerpoint') ||
+            selectedFile.file_name.toLowerCase().match(/\.(doc|docx|ppt|pptx)$/)
+        ) {
+            const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(publicUrl)}`;
+            return (
+                <div className="preview-media-container pdf-container">
+                    {publicUrl ? (
+                        <iframe src={officeUrl} title="Document Preview" className="preview-media-pdf" />
+                    ) : (
+                        <FileText size={64} className="preview-placeholder-icon" />
+                    )}
+                </div>
+            );
         } else if (type.startsWith('video/')) {
             return (
                 <div className="preview-media-container">
