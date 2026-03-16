@@ -22,11 +22,11 @@ const Signup = () => {
         setLoading(true);
         try {
             const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
+                email: formData.email.trim(),
                 password: formData.password,
                 options: {
                     data: {
-                        full_name: formData.fullName
+                        full_name: formData.fullName.trim()
                     }
                 }
             });
