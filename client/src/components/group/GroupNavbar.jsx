@@ -21,15 +21,36 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
     };
 
     const [members, setMembers] = useState([]);
+    const [onlineUserIds, setOnlineUserIds] = useState(new Set());
 
+    // Fetch all registered members from DB
     useEffect(() => {
+        if (!id) return;
+        const fetchMembers = async () => {
+            const { data, error } = await supabase
+                .from('group_members')
+                .select('user_id, role, display_name')
+                .eq('group_id', id);
+            if (!error && data) {
+                setMembers(data.map(m => ({
+                    id: m.user_id,
+                    name: m.display_name || 'Member',
+                    role: m.role || 'Member'
+                })));
+            }
+        };
+        fetchMembers();
+    }, [id]);
+
+    // Track who is currently online via Presence
+    useEffect(() => {
+        if (!id) return;
         let channel;
 
         const setupPresence = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // Check if current user is admin
             const { data: groupData } = await supabase
                 .from('collab_groups')
                 .select('created_by')
@@ -39,45 +60,14 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
             const isCreator = groupData?.created_by === user.id;
             const userName = localStorage.getItem('userName') || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
 
-            // Setup Realtime Presence Channel
             channel = supabase.channel(`group_presence:${id}`, {
-                config: {
-                    presence: {
-                        key: user.id,
-                    },
-                },
+                config: { presence: { key: user.id } },
             });
 
             channel
                 .on('presence', { event: 'sync' }, () => {
                     const presenceState = channel.presenceState();
-                    const activeMembers = [];
-
-                    for (const userId in presenceState) {
-                        const userPresences = presenceState[userId];
-                        if (userPresences.length > 0) {
-                            activeMembers.push(userPresences[0]);
-                        }
-                    }
-
-                    // Sort so current user is always top
-                    activeMembers.sort((a, b) => {
-                        if (a.id === user.id) return -1;
-                        if (b.id === user.id) return 1;
-                        // Admins next
-                        if (a.role === 'Admin' && b.role !== 'Admin') return -1;
-                        if (b.role === 'Admin' && a.role !== 'Admin') return 1;
-                        return 0;
-                    });
-
-                    // Update display names to include (You)
-                    const formattedMembers = activeMembers.map(m => ({
-                        id: m.id,
-                        name: m.id === user.id ? `${m.name} (You)` : m.name,
-                        role: m.role
-                    }));
-
-                    setMembers(formattedMembers);
+                    setOnlineUserIds(new Set(Object.keys(presenceState)));
                 })
                 .subscribe(async (status) => {
                     if (status === 'SUBSCRIBED') {
@@ -93,9 +83,7 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         setupPresence();
 
         return () => {
-            if (channel) {
-                supabase.removeChannel(channel);
-            }
+            if (channel) supabase.removeChannel(channel);
         };
     }, [id]);
 
@@ -122,20 +110,33 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
 
                     {isMembersOpen && (
                         <div className="group-dropdown members-dropdown">
-                            <div className="dropdown-header">Group Members</div>
+                            <div className="dropdown-header">
+                                Group Members
+                                <span style={{ opacity: 0.5, fontSize: '0.75rem', fontWeight: 400 }}>
+                                    {' '}· {onlineUserIds.size} online
+                                </span>
+                            </div>
                             {members.length === 0 ? (
-                                <div className="member-item" style={{ opacity: 0.5, fontSize: '0.8rem' }}>No active members</div>
+                                <div className="member-item" style={{ opacity: 0.5, fontSize: '0.8rem' }}>No members yet</div>
                             ) : members.map(member => {
-                                const isYou = member.name.includes('(You)');
-                                const baseName = member.name.replace(' (You)', '');
-                                const firstName = baseName.split(' ')[0];
-                                const displayName = isYou ? `${firstName} (You)` : firstName;
-                                const fullName = baseName;
+                                const isOnline = onlineUserIds.has(member.id);
+                                const firstName = member.name.split(' ')[0];
+                                const isCurrentUser = [...onlineUserIds].length > 0 && isOnline && member.id === member.id;
                                 return (
-                                    <div key={member.id} className="member-item" title={fullName}>
-                                        <div className="member-avatar">{baseName.charAt(0)}</div>
+                                    <div key={member.id} className="member-item" title={member.name}>
+                                        <div className="member-avatar-wrapper" style={{ position: 'relative' }}>
+                                            <div className="member-avatar">{member.name.charAt(0)}</div>
+                                            {isOnline && (
+                                                <span style={{
+                                                    position: 'absolute', bottom: 0, right: 0,
+                                                    width: '9px', height: '9px',
+                                                    background: '#22c55e', borderRadius: '50%',
+                                                    border: '2px solid var(--color-surface, #1a1a2e)'
+                                                }} />
+                                            )}
+                                        </div>
                                         <div className="member-info">
-                                            <div className="member-name">{displayName}</div>
+                                            <div className="member-name">{firstName}</div>
                                             <div className="member-role">{member.role}</div>
                                         </div>
                                     </div>

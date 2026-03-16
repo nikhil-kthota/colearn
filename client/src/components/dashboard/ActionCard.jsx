@@ -43,7 +43,8 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             await supabase.from('group_members').insert([{
                 group_id: groupId,
                 user_id: authUser.id,
-                role: 'Admin'
+                role: 'Admin',
+                display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Admin'
             }]);
 
             const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}&creating=true`;
@@ -80,7 +81,8 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 const { error: joinError } = await supabase.from('group_members').insert([{
                     group_id: groupId,
                     user_id: authUser.id,
-                    role: 'Member'
+                    role: 'Member',
+                    display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Member'
                 }]);
                 if (joinError && joinError.code !== '23505') {
                     console.warn('Error joining group_members:', joinError);
@@ -129,7 +131,8 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             await supabase.from('group_members').insert([{
                 group_id: groupId,
                 user_id: authUser.id,
-                role: 'Admin'
+                role: 'Admin',
+                display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Admin'
             }]);
 
             navigate(`/group/${groupId}`);
@@ -165,7 +168,8 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 const { error: joinError } = await supabase.from('group_members').insert([{
                     group_id: groupId,
                     user_id: authUser.id,
-                    role: 'Member'
+                    role: 'Member',
+                    display_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Member'
                 }]);
                 if (joinError && joinError.code !== '23505') {
                     console.warn('Error joining group_members:', joinError);

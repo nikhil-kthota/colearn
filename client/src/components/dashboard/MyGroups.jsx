@@ -53,11 +53,28 @@ const MyGroups = () => {
                 const mergedGroups = Array.from(allGroupsMap.values())
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+                // 3. Fetch member counts for all groups in one batch query
+                const allGroupIds = mergedGroups.map(g => g.group_id);
+                let memberCountMap = {};
+
+                if (allGroupIds.length > 0) {
+                    const { data: memberCounts } = await supabase
+                        .from('group_members')
+                        .select('group_id')
+                        .in('group_id', allGroupIds);
+
+                    if (memberCounts) {
+                        memberCounts.forEach(m => {
+                            memberCountMap[m.group_id] = (memberCountMap[m.group_id] || 0) + 1;
+                        });
+                    }
+                }
+
                 setGroups(mergedGroups.map(g => ({
                     id: g.group_id,
                     name: g.group_name,
                     type: g.type,
-                    members: 1, // You could fetch group member counts here if wanted
+                    members: memberCountMap[g.group_id] || 1,
                     lastUsed: new Date(g.created_at).toLocaleDateString()
                 })));
             } catch (err) {

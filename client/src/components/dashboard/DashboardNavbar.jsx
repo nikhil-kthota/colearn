@@ -89,7 +89,10 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                             onMouseLeave={() => setIsProfileOpen(false)}
                         >
                             <div className="user-avatar-circle" onClick={() => navigate('/profile')}>
-                                JD
+                                {(() => {
+                                    const name = localStorage.getItem('userName') || 'User';
+                                    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                                })()}
                             </div>
 
                             {isProfileOpen && (
@@ -128,7 +131,12 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                             className="mobile-user-toggle"
                             onClick={toggleMobileProfile}
                         >
-                            <div className="user-avatar-circle mini">JD</div>
+                            <div className="user-avatar-circle mini">
+                                {(() => {
+                                    const name = localStorage.getItem('userName') || 'User';
+                                    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                                })()}
+                            </div>
                         </button>
 
                         {isMobileProfileOpen && (
