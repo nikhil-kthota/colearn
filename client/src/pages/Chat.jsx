@@ -398,9 +398,9 @@ const Chat = ({ isDark, toggleTheme }) => {
                         </div>
                         <div className="mini-file-list">
                             {groupFiles.map(file => (
-                                <div key={file.id} className="file-pill">
-                                    <FileText size={12} />
-                                    <span>{file.name}</span>
+                                <div key={file.id} className="file-pill" title={file.name || 'Unnamed File'}>
+                                    <FileText size={16} />
+                                    <span>{file.name || 'Unnamed File'}</span>
                                 </div>
                             ))}
                         </div>
