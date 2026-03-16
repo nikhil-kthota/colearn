@@ -42,61 +42,98 @@ const Chat = ({ isDark, toggleTheme }) => {
     const fileInputRef = useRef(null);
     const [currentUser, setCurrentUser] = useState(null);
 
-    // Mock data for members
-    const members = [
-        { id: 1, name: "John Doe", avatar: "JD", color: "#3b82f6", status: "online" },
-        { id: 2, name: "Alice Smith", avatar: "AS", color: "#10b981", status: "online" },
-        { id: 3, name: "Bob Wilson", avatar: "BW", color: "#f59e0b", status: "offline" },
-        { id: 4, name: "Charlie Davis", avatar: "CD", color: "#8b5cf6", status: "online" }
-    ];
-
-    // Mock data for group files
-    const groupFiles = [
+    const [realMembers, setRealMembers] = useState([]);
+    const [groupFiles, setGroupFiles] = useState([
         { id: 1, name: 'architecture_diagram.pdf', size: '2.4 MB' },
         { id: 2, name: 'app_logic.js', size: '15 KB' },
         { id: 3, name: 'brand_assets.zip', size: '12.8 MB' }
-    ];
+    ]);
 
     // Chat Tabs/Channels
     const [conversations, setConversations] = useState([
-        { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> },
-        { id: 'alice', name: 'Alice Smith', type: 'dm', memberId: 2, icon: <User size={18} /> },
-        { id: 'frontend-team', name: 'Frontend Squad', type: 'group', icon: <Users size={18} /> }
+        { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> }
     ]);
 
     const [activeChatId, setActiveChatId] = useState('general');
     const activeChat = conversations.find(c => c.id === activeChatId);
 
-    // Mock messages per conversation
-    const [chatMessages, setChatMessages] = useState({
-        'general': [
-            { id: 1, user: members[1], text: 'Welcome to the team! Check #architecture_diagram.pdf', time: '12:45 PM' },
-            { id: 2, user: members[0], text: 'Thanks @Alice! Looking into it.', time: '12:47 PM' }
-        ],
-        'alice': [
-            { id: 1, user: members[1], text: 'Hey John, do you have a second to review the PR?', time: '10:30 AM' }
-        ],
-        'frontend-team': [
-            { id: 1, user: members[3], text: 'Starting the sprint planning meeting in 5 mins.', time: '11:00 AM' }
-        ]
-    });
+    // messages per channel
+    const [chatMessages, setChatMessages] = useState({});
 
     const [loading, setLoading] = useState(true);
     const [currentGroupName, setCurrentGroupName] = useState('Loading...');
 
     useEffect(() => {
-        const setupUser = async () => {
+        const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) setCurrentUser(user);
         };
-        setupUser();
+        fetchUser();
         fetchGroupDetails();
+        fetchMembers();
+        fetchChannels();
+        fetchGroupFiles();
         fetchMessages();
         const subscription = subscribeToMessages();
         return () => {
             subscription.unsubscribe();
         };
     }, [id, activeChatId]);
+
+    const fetchMembers = async () => {
+        const { data, error } = await supabase
+            .from('group_members')
+            .select('user_id, role, display_name')
+            .eq('group_id', id);
+        
+        if (data) {
+            setRealMembers(data.map(m => {
+                // Generate a consistent color based on user_id
+                let hash = 0;
+                for (let i = 0; i < m.user_id.length; i++) {
+                    hash = m.user_id.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const color = `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
+
+                return {
+                    id: m.user_id,
+                    name: m.display_name || 'Member',
+                    avatar: (m.display_name || 'M').charAt(0),
+                    color: color,
+                    role: m.role
+                };
+            }));
+        }
+    };
+
+    const fetchChannels = async () => {
+        const { data, error } = await supabase
+            .from('group_channels')
+            .select('*')
+            .eq('group_id', id);
+        
+        const baseConvs = [{ id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> }];
+        if (data && data.length > 0) {
+            const dbConvs = data.map(c => ({
+                id: c.id,
+                name: c.name,
+                type: 'group',
+                icon: <Users size={18} />
+            }));
+            setConversations([...baseConvs, ...dbConvs]);
+        } else {
+            setConversations(baseConvs);
+        }
+    };
+
+    const fetchGroupFiles = async () => {
+        const { data, error } = await supabase
+            .from('group_files')
+            .select('*')
+            .eq('group_id', id);
+        
+        if (data) setGroupFiles(data);
+    };
 
     const fetchGroupDetails = async () => {
         const { data, error } = await supabase
@@ -112,11 +149,14 @@ const Chat = ({ isDark, toggleTheme }) => {
             .from('group_messages')
             .select('*')
             .eq('group_id', id)
+            .eq('channel_id', activeChatId)
             .order('created_at', { ascending: true });
 
         if (data) {
-            // Transform data if needed or group by channel (placeholder for now)
-            setChatMessages({ 'general': data });
+            setChatMessages(prev => ({
+                ...prev,
+                [activeChatId]: data
+            }));
         }
         setLoading(false);
     };
@@ -130,9 +170,10 @@ const Chat = ({ isDark, toggleTheme }) => {
                 table: 'group_messages',
                 filter: `group_id=eq.${id}`
             }, payload => {
+                const { channel_id } = payload.new;
                 setChatMessages(prev => ({
                     ...prev,
-                    ['general']: [...(prev['general'] || []), payload.new]
+                    [channel_id]: [...(prev[channel_id] || []), payload.new]
                 }));
             })
             .subscribe();
@@ -145,11 +186,10 @@ const Chat = ({ isDark, toggleTheme }) => {
             
             const newMessage = {
                 group_id: id,
+                channel_id: activeChatId,
                 user_id: user.id,
                 user_name: user.user_metadata?.full_name || user.email,
                 text: message,
-                // image_url: attachedImage, // Would upload to storage first
-                // file_url: attachedFile, // Would upload to storage first
             };
 
             const { error } = await supabase
@@ -205,22 +245,37 @@ const Chat = ({ isDark, toggleTheme }) => {
         }
     };
 
-    const handleCreateChannel = (e) => {
+    const handleCreateChannel = async (e) => {
         e.preventDefault();
         if (newChannelName.trim()) {
-            const newId = newChannelName.toLowerCase().replace(/\s+/g, '-');
-            const newConv = {
-                id: newId,
-                name: newChannelName,
-                type: 'group',
-                icon: <Users size={18} />
-            };
-            setConversations([...conversations, newConv]);
-            setChatMessages({ ...chatMessages, [newId]: [] });
-            setActiveChatId(newId);
-            setNewChannelName('');
-            setSelectedMembers([]);
-            setShowCreateModal(false);
+            try {
+                const { data, error } = await supabase
+                    .from('group_channels')
+                    .insert([{
+                        group_id: id,
+                        name: newChannelName,
+                        type: 'group'
+                    }])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                const newConv = {
+                    id: data.id,
+                    name: data.name,
+                    type: 'group',
+                    icon: <Users size={18} />
+                };
+                setConversations([...conversations, newConv]);
+                setChatMessages({ ...chatMessages, [data.id]: [] });
+                setActiveChatId(data.id);
+                setNewChannelName('');
+                setSelectedMembers([]);
+                setShowCreateModal(false);
+            } catch (err) {
+                console.error('Error creating channel:', err);
+            }
         }
     };
 
@@ -368,8 +423,8 @@ const Chat = ({ isDark, toggleTheme }) => {
                                 <span className="chat-title">{activeChat?.name}</span>
                                 <span className="member-count">
                                     {activeChat?.type === 'group'
-                                        ? members.map(m => m.name).join(', ')
-                                        : members.find(m => m.id === activeChat?.memberId)?.status === 'online' ? 'Active now' : 'Offline'
+                                        ? `${realMembers.length} members`
+                                        : 'Direct Message'
                                     }
                                 </span>
                             </div>
@@ -378,17 +433,19 @@ const Chat = ({ isDark, toggleTheme }) => {
 
                     <div className="chat-scroller">
                         <div className="chat-messages-list">
-                            {(chatMessages[activeChatId] || []).map((msg) => (
-                                <div key={msg.id} className={`chat-message ${msg.user_id === currentUser?.id ? 'mine' : ''}`}>
-                                    <div className="message-avatar" style={{ backgroundColor: '#ccc' }}>
-                                        {msg.user_name?.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="message-body">
-                                        <div className="message-header">
-                                            <span className="author">{msg.user_name}</span>
-                                            <span className="timestamp">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            {(chatMessages[activeChatId] || []).map((msg) => {
+                                const msgMember = realMembers.find(m => m.id === msg.user_id);
+                                return (
+                                    <div key={msg.id} className={`chat-message ${msg.user_id === currentUser?.id ? 'mine' : ''}`}>
+                                        <div className="message-avatar" style={{ backgroundColor: msgMember?.color || '#2dd4bf' }}>
+                                            {(msg.user_name || 'U').substring(0, 1).toUpperCase()}
                                         </div>
-                                        <div className="message-bubble">
+                                        <div className="message-body">
+                                            <div className="message-header">
+                                                <span className="author">{msg.user_name}</span>
+                                                <span className="timestamp">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            <div className="message-bubble">
                                             {msg.image_url && (
                                                 <div className="message-image">
                                                     <img src={msg.image_url} alt="Uploaded" />
@@ -406,7 +463,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            )})}
                             <div ref={chatEndRef} />
                         </div>
                     </div>
@@ -532,7 +589,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <div className="form-group">
                                 <label>Add Members</label>
                                 <div className="members-selection-list">
-                                    {members.filter(m => m.id !== 1).map(member => (
+                                    {realMembers.filter(m => m.id !== currentUser?.id).map(member => (
                                         <div
                                             key={member.id}
                                             className={`member-select-item ${selectedMembers.includes(member.id) ? 'selected' : ''}`}
@@ -569,7 +626,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <input type="text" placeholder="Search members..." />
                         </div>
                         <div className="modal-scroll-list">
-                            {members.filter(m => m.id !== 1).map(member => (
+                            {realMembers.filter(m => m.id !== currentUser?.id).map(member => (
                                 <div key={member.id} className="dm-select-item" onClick={() => handleStartDM(member)}>
                                     <div className="member-avatar" style={{ backgroundColor: member.color }}>{member.avatar}</div>
                                     <div className="dm-item-info">
