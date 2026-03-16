@@ -99,7 +99,7 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
         <div className="group-column viewer-column">
             <div className="column-header flex-between" style={{ alignItems: 'center' }}>
                 <div className="preview-header-title">
-                    {selectedFile ? selectedFile.file_name : 'FILE PREVIEW'}
+                    {selectedFile ? selectedFile.file_name : 'FILE VIEW'}
                 </div>
                 
                 {selectedFile && publicUrl && (
