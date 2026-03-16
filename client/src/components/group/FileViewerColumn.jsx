@@ -131,7 +131,10 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
                     </div>
                 ) : (
                     <div className="empty-preview">
-                        <FileText size={48} className="empty-preview-icon" style={{ opacity: 0.1, marginBottom: '1rem' }} />
+                        <div className="empty-preview-icon">
+                            <FileText size={56} strokeWidth={1.2} />
+                        </div>
+                        <h3>No File Selected</h3>
                         <p>Select a file from the sidebar to preview its details</p>
                     </div>
                 )}

@@ -245,8 +245,11 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                 <div className="column-content">
                     {loading ? (
                         <div className="files-loading">
-                            <Loader2 className="animate-spin" size={24} />
-                            <p>Loading files...</p>
+                            <div className="loading-icon-wrapper">
+                                <Loader2 className="loading-spinner" size={40} />
+                            </div>
+                            <h3>Loading Files</h3>
+                            <p>Fetching your group documents...</p>
                         </div>
                     ) : files.length > 0 ? (
                         <div className="files-list-container">
