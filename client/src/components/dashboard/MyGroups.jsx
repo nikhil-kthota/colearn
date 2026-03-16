@@ -22,15 +22,10 @@ const MyGroups = () => {
                     .select('*')
                     .eq('created_by', user.id);
 
-                // 2. Fetch groups the user has joined via group_members
+                // 2. Fetch IDs of groups the user has joined
                 const { data: joinedMemberships, error: joinedError } = await supabase
                     .from('group_members')
-                    .select(`
-                        group_id,
-                        collab_groups!inner (
-                            *
-                        )
-                    `)
+                    .select('group_id')
                     .eq('user_id', user.id);
 
                 let allGroupsMap = new Map();
@@ -41,13 +36,18 @@ const MyGroups = () => {
                     });
                 }
 
-                if (!joinedError && joinedMemberships) {
-                    joinedMemberships.forEach(m => {
-                        const g = m.collab_groups;
-                        if (g) {
+                if (!joinedError && joinedMemberships && joinedMemberships.length > 0) {
+                    const joinedIds = joinedMemberships.map(m => m.group_id);
+                    const { data: joinedGroups } = await supabase
+                        .from('collab_groups')
+                        .select('*')
+                        .in('group_id', joinedIds);
+                    
+                    if (joinedGroups) {
+                        joinedGroups.forEach(g => {
                             allGroupsMap.set(g.group_id, g);
-                        }
-                    });
+                        });
+                    }
                 }
 
                 const mergedGroups = Array.from(allGroupsMap.values())
