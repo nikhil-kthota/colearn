@@ -20,37 +20,16 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         navigate('/');
     };
 
-    const [dbMembers, setDbMembers] = useState([]);
-    const [presenceMap, setPresenceMap] = useState({}); // { userId: { name, role } }
+    const [members, setMembers] = useState([]);
 
-    // Fetch all registered members from DB
     useEffect(() => {
-        if (!id) return;
-        const fetchMembers = async () => {
-            const { data, error } = await supabase
-                .from('group_members')
-                .select('user_id, role, display_name')
-                .eq('group_id', id);
-            if (!error && data) {
-                setDbMembers(data.map(m => ({
-                    id: m.user_id,
-                    name: m.display_name || null, // could be null for old records
-                    role: m.role || 'Member'
-                })));
-            }
-        };
-        fetchMembers();
-    }, [id]);
-
-    // Track who is online via Presence (includes real names)
-    useEffect(() => {
-        if (!id) return;
         let channel;
 
         const setupPresence = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // Check if current user is admin
             const { data: groupData } = await supabase
                 .from('collab_groups')
                 .select('created_by')
@@ -60,22 +39,45 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
             const isCreator = groupData?.created_by === user.id;
             const userName = localStorage.getItem('userName') || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
 
+            // Setup Realtime Presence Channel
             channel = supabase.channel(`group_presence:${id}`, {
-                config: { presence: { key: user.id } },
+                config: {
+                    presence: {
+                        key: user.id,
+                    },
+                },
             });
 
             channel
                 .on('presence', { event: 'sync' }, () => {
                     const presenceState = channel.presenceState();
-                    // Build a map of userId -> {name, role} from presence
-                    const map = {};
+                    const activeMembers = [];
+
                     for (const userId in presenceState) {
-                        const entries = presenceState[userId];
-                        if (entries.length > 0) {
-                            map[userId] = { name: entries[0].name, role: entries[0].role };
+                        const userPresences = presenceState[userId];
+                        if (userPresences.length > 0) {
+                            activeMembers.push(userPresences[0]);
                         }
                     }
-                    setPresenceMap(map);
+
+                    // Sort so current user is always top
+                    activeMembers.sort((a, b) => {
+                        if (a.id === user.id) return -1;
+                        if (b.id === user.id) return 1;
+                        // Admins next
+                        if (a.role === 'Admin' && b.role !== 'Admin') return -1;
+                        if (b.role === 'Admin' && a.role !== 'Admin') return 1;
+                        return 0;
+                    });
+
+                    // Update display names to include (You)
+                    const formattedMembers = activeMembers.map(m => ({
+                        id: m.id,
+                        name: m.id === user.id ? `${m.name} (You)` : m.name,
+                        role: m.role
+                    }));
+
+                    setMembers(formattedMembers);
                 })
                 .subscribe(async (status) => {
                     if (status === 'SUBSCRIBED') {
@@ -91,17 +93,11 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         setupPresence();
 
         return () => {
-            if (channel) supabase.removeChannel(channel);
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
         };
     }, [id]);
-
-    // Merge DB members with presence data — presence names take priority
-    const members = dbMembers.map(m => ({
-        ...m,
-        name: presenceMap[m.id]?.name || m.name || 'Member',
-        isOnline: !!presenceMap[m.id]
-    }));
-    const onlineCount = Object.keys(presenceMap).length;
 
     return (
         <nav className="group-navbar">
@@ -126,36 +122,16 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
 
                     {isMembersOpen && (
                         <div className="group-dropdown members-dropdown">
-                            <div className="dropdown-header">
-                                Group Members
-                                <span style={{ opacity: 0.5, fontSize: '0.75rem', fontWeight: 400 }}>
-                                    {' '}· {onlineCount} online
-                                </span>
-                            </div>
-                            {members.length === 0 ? (
-                                <div className="member-item" style={{ opacity: 0.5, fontSize: '0.8rem' }}>No members yet</div>
-                            ) : members.map(member => {
-                                const firstName = member.name.split(' ')[0];
-                                return (
-                                    <div key={member.id} className="member-item" title={member.name}>
-                                        <div className="member-avatar-wrapper" style={{ position: 'relative' }}>
-                                            <div className="member-avatar">{member.name.charAt(0)}</div>
-                                            {member.isOnline && (
-                                                <span style={{
-                                                    position: 'absolute', bottom: 0, right: 0,
-                                                    width: '9px', height: '9px',
-                                                    background: '#22c55e', borderRadius: '50%',
-                                                    border: '2px solid var(--color-surface, #1a1a2e)'
-                                                }} />
-                                            )}
-                                        </div>
-                                        <div className="member-info">
-                                            <div className="member-name">{firstName}</div>
-                                            <div className="member-role">{member.role}</div>
-                                        </div>
+                            <div className="dropdown-header">Group Members</div>
+                            {members.map(member => (
+                                <div key={member.id} className="member-item">
+                                    <div className="member-avatar">{member.name.charAt(0)}</div>
+                                    <div className="member-info">
+                                        <div className="member-name">{member.name}</div>
+                                        <div className="member-role">{member.role}</div>
                                     </div>
-                                );
-                            })}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

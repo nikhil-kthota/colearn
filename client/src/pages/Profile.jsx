@@ -10,7 +10,6 @@ const Profile = ({ isDark, toggleTheme }) => {
     const [showMainPassword, setShowMainPassword] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' }
 
     // Model editing states
     const [editingModelId, setEditingModelId] = useState(null);
@@ -31,11 +30,6 @@ const Profile = ({ isDark, toggleTheme }) => {
     });
 
     const [formData, setFormData] = useState({ ...user });
-
-    const showToast = (message, type = 'success') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3500);
-    };
 
     useEffect(() => {
         fetchUserData();
@@ -96,7 +90,7 @@ const Profile = ({ isDark, toggleTheme }) => {
     };
 
     const handleEditToggle = () => {
-        if (!isEditing) {
+        if (isEditing) {
             setFormData({ ...user });
         }
         setIsEditing(!isEditing);
@@ -110,24 +104,12 @@ const Profile = ({ isDark, toggleTheme }) => {
 
             if (error) throw error;
 
-            // Update localStorage for navbars
-            localStorage.setItem('userName', formData.name);
-
-            // Update existing group_members records so their name matches in all groups
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                await supabase
-                    .from('group_members')
-                    .update({ display_name: formData.name })
-                    .eq('user_id', authUser.id);
-            }
-
             setUser({ ...formData });
             setIsEditing(false);
-            showToast('Profile updated successfully! ✓');
+            alert('Profile updated successfully!');
         } catch (err) {
             console.error('Error updating profile:', err);
-            showToast('Failed to update profile.', 'error');
+            alert('Failed to update profile.');
         }
     };
 
@@ -269,13 +251,6 @@ const Profile = ({ isDark, toggleTheme }) => {
 
     return (
         <div className="profile-page-wrapper">
-            {/* Toast Notification */}
-            {toast && (
-                <div className={`profile-toast profile-toast-${toast.type}`}>
-                    <span>{toast.message}</span>
-                </div>
-            )}
-
             <button className="back-btn" onClick={() => navigate(-1)}>
                 <ArrowLeft size={20} />
                 <span>Back</span>
@@ -292,13 +267,8 @@ const Profile = ({ isDark, toggleTheme }) => {
 
             {loading ? (
                 <div className="profile-loading">
-                    <div className="profile-loading-orb">
-                        <div className="profile-loading-ring" />
-                        <div className="profile-loading-ring profile-loading-ring-2" />
-                        <span className="profile-loading-initials">CL</span>
-                    </div>
-                    <p className="profile-loading-text">Loading your profile...</p>
-                    <p className="profile-loading-sub">Fetching your data from the cloud</p>
+                    <Loader2 className="animate-spin" size={48} />
+                    <p>Loading your profile...</p>
                 </div>
             ) : (
                 <main className="profile-content">
