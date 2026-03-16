@@ -10,6 +10,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
     const [loading, setLoading] = React.useState(true);
     const [uploading, setUploading] = React.useState(false);
     const [deletingId, setDeletingId] = React.useState(null);
+    const [fileToDelete, setFileToDelete] = React.useState(null);
     const [isAdmin, setIsAdmin] = React.useState(false);
 
     React.useEffect(() => {
@@ -139,13 +140,28 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
         }
     }; // Close handleFileChange
 
-    const handleFileDelete = async (e, file) => {
+    const handleFileDeleteClick = (e, file) => {
         e.stopPropagation(); // prevent selecting the file
         if (file.isOptimistic) return;
-        if (!window.confirm('Are you sure you want to delete this file?')) return;
+        setFileToDelete(file);
+    };
 
+    const executeDelete = async () => {
+        if (!fileToDelete) return;
+        const file = fileToDelete;
+        
         setDeletingId(file.id);
+        
         try {
+            // Optimistically update the UI to feel instant
+            setFiles(prev => prev.filter(f => f.id !== file.id));
+            setFileToDelete(null); // Close modal
+            
+            // Auto close preview if they delete the currently viewing file
+            if (selectedFile?.id === file.id) {
+                onFileSelect(null);
+            }
+
             // 1. Storage remove
             const { error: storageError } = await supabase.storage
                 .from('group-assets')
@@ -161,19 +177,16 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
 
             if (dbError) throw dbError;
 
-            // Trigger global refresh (if the deleted file was the one currently viewed, we clear it here)
-            // But since Group.jsx passes down a `handleFileDelete` for the viewer, we can just do a fetch here locally first.
-            
-            // Auto close preview if they delete the currently viewing file
-            if (selectedFile?.id === file.id) {
-                onFileSelect(null);
-            }
-            fetchFiles(); 
         } catch (err) {
             console.error('Delete error:', err);
-            alert('Error deleting file: ' + err.message);
+            // Wait to alert so UI won't freeze, then revert optimistic UI
+            fetchFiles(); 
+            setTimeout(() => {
+                alert('Error deleting file: ' + err.message);
+            }, 100);
         } finally {
             setDeletingId(null);
+            setFileToDelete(null);
         }
     };
 
@@ -280,7 +293,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                                             {isAdmin && (
                                                 <button 
                                                     className="file-action-btn file-action-delete" 
-                                                    onClick={(e) => handleFileDelete(e, file)}
+                                                    onClick={(e) => handleFileDeleteClick(e, file)}
                                                     title="Delete"
                                                     disabled={file.isOptimistic || deletingId === file.id}
                                                 >
@@ -312,6 +325,41 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                             </button>
                         </div>
                     )}
+                </div>
+            )}
+            
+            {/* Custom Delete Confirmation Modal */}
+            {fileToDelete && (
+                <div className="delete-confirm-overlay fade-in">
+                    <div className="delete-confirm-modal">
+                        <div className="delete-modal-icon">
+                            <Trash2 size={32} />
+                        </div>
+                        <h3>Delete File</h3>
+                        <p>Are you sure you want to delete <strong>{fileToDelete.file_name}</strong>?</p>
+                        <p className="delete-warning">This action cannot be undone and it will be removed for everyone.</p>
+                        
+                        <div className="delete-modal-actions">
+                            <button 
+                                className="cancel-modal-btn"
+                                onClick={() => setFileToDelete(null)}
+                                disabled={deletingId === fileToDelete.id}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="confirm-delete-btn"
+                                onClick={executeDelete}
+                                disabled={deletingId === fileToDelete.id}
+                            >
+                                {deletingId === fileToDelete.id ? (
+                                    <><Loader2 size={16} className="animate-spin" /> Deleting...</>
+                                ) : (
+                                    <><Trash2 size={16} /> Delete File</>
+                                )}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
