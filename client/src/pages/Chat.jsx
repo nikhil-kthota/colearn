@@ -40,6 +40,7 @@ const Chat = ({ isDark, toggleTheme }) => {
     const chatEndRef = useRef(null);
     const imageInputRef = useRef(null);
     const fileInputRef = useRef(null);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Mock data for members
     const members = [
@@ -64,6 +65,7 @@ const Chat = ({ isDark, toggleTheme }) => {
     ]);
 
     const [activeChatId, setActiveChatId] = useState('general');
+    const activeChat = conversations.find(c => c.id === activeChatId);
 
     // Mock messages per conversation
     const [chatMessages, setChatMessages] = useState({
@@ -83,6 +85,11 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [currentGroupName, setCurrentGroupName] = useState('Loading...');
 
     useEffect(() => {
+        const setupUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setCurrentUser(user);
+        };
+        setupUser();
         fetchGroupDetails();
         fetchMessages();
         const subscription = subscribeToMessages();
@@ -372,7 +379,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                     <div className="chat-scroller">
                         <div className="chat-messages-list">
                             {(chatMessages[activeChatId] || []).map((msg) => (
-                                <div key={msg.id} className={`chat-message ${msg.user_id === members[0].id ? 'mine' : ''}`}>
+                                <div key={msg.id} className={`chat-message ${msg.user_id === currentUser?.id ? 'mine' : ''}`}>
                                     <div className="message-avatar" style={{ backgroundColor: '#ccc' }}>
                                         {msg.user_name?.substring(0, 2).toUpperCase()}
                                     </div>
