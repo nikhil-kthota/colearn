@@ -96,7 +96,7 @@ const Profile = ({ isDark, toggleTheme }) => {
     };
 
     const handleEditToggle = () => {
-        if (isEditing) {
+        if (!isEditing) {
             setFormData({ ...user });
         }
         setIsEditing(!isEditing);
@@ -109,6 +109,18 @@ const Profile = ({ isDark, toggleTheme }) => {
             });
 
             if (error) throw error;
+
+            // Update localStorage for navbars
+            localStorage.setItem('userName', formData.name);
+
+            // Update existing group_members records so their name matches in all groups
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                await supabase
+                    .from('group_members')
+                    .update({ display_name: formData.name })
+                    .eq('user_id', authUser.id);
+            }
 
             setUser({ ...formData });
             setIsEditing(false);

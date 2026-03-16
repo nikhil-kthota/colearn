@@ -6,12 +6,17 @@ import '../styles/Signup.css';
 
 const Signup = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         password: ''
     });
+    const [toast, setToast] = useState(null); // { message, type }
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3500);
+    };
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,12 +36,23 @@ const Signup = () => {
                 }
             });
 
-            if (error) throw error;
+            if (error) {
+                if (error.message.includes('rate limit')) {
+                    showToast('Email limit exceeded. Please try "Sign up with Google" instead!', 'error');
+                } else {
+                    showToast(error.message, 'error');
+                }
+                return;
+            }
 
-            alert('Signup successful! Please check your email for verification.');
-            navigate('/login');
+            if (data?.user?.identities?.length === 0) {
+                showToast('Email already in use. Try logging in.', 'error');
+            } else {
+                showToast('Signup successful! Check your email or try logging in.');
+                setTimeout(() => navigate('/login'), 2000);
+            }
         } catch (error) {
-            alert(error.message);
+            showToast(error.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -67,7 +83,7 @@ const Signup = () => {
             if (error) throw error;
         } catch (error) {
             console.error("FATAL: Google Signup process failed:", error);
-            alert(`Signup Error: ${error.message}. Check browser console for details.`);
+            showToast(`Login failed: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
@@ -75,6 +91,11 @@ const Signup = () => {
 
     return (
         <div className="signup-container">
+            {toast && (
+                <div className={`profile-toast profile-toast-${toast.type || 'success'}`} style={{ position: 'fixed', top: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+                    <span>{toast.message}</span>
+                </div>
+            )}
             <div className="signup-left">
                 <Link to="/" className="back-link" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', textDecoration: 'none', color: 'inherit', fontFamily: 'var(--font-display)' }}>
                     <ArrowLeft size={20} />
@@ -117,10 +138,10 @@ const Signup = () => {
 
                 <div className="divider">OR</div>
 
-                <button 
-                    type="button" 
-                    className="btn-google" 
-                    onClick={handleGoogleSignup} 
+                <button
+                    type="button"
+                    className="btn-google"
+                    onClick={handleGoogleSignup}
                     disabled={loading}
                 >
                     <Mail size={18} />
