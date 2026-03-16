@@ -123,15 +123,24 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                     {isMembersOpen && (
                         <div className="group-dropdown members-dropdown">
                             <div className="dropdown-header">Group Members</div>
-                            {members.map(member => (
-                                <div key={member.id} className="member-item">
-                                    <div className="member-avatar">{member.name.charAt(0)}</div>
-                                    <div className="member-info">
-                                        <div className="member-name">{member.name}</div>
-                                        <div className="member-role">{member.role}</div>
+                            {members.length === 0 ? (
+                                <div className="member-item" style={{ opacity: 0.5, fontSize: '0.8rem' }}>No active members</div>
+                            ) : members.map(member => {
+                                const isYou = member.name.includes('(You)');
+                                const baseName = member.name.replace(' (You)', '');
+                                const firstName = baseName.split(' ')[0];
+                                const displayName = isYou ? `${firstName} (You)` : firstName;
+                                const fullName = baseName;
+                                return (
+                                    <div key={member.id} className="member-item" title={fullName}>
+                                        <div className="member-avatar">{baseName.charAt(0)}</div>
+                                        <div className="member-info">
+                                            <div className="member-name">{displayName}</div>
+                                            <div className="member-role">{member.role}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
