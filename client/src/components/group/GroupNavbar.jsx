@@ -161,7 +161,10 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                     onMouseLeave={() => setIsProfileOpen(false)}
                 >
                     <div className="group-user-avatar" onClick={() => navigate('/profile')}>
-                        JD
+                        {(() => {
+                            const name = localStorage.getItem('userName') || 'User';
+                            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                        })()}
                     </div>
 
                     {isProfileOpen && (
