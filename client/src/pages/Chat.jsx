@@ -43,11 +43,7 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [currentUser, setCurrentUser] = useState(null);
 
     const [realMembers, setRealMembers] = useState([]);
-    const [groupFiles, setGroupFiles] = useState([
-        { id: 1, name: 'architecture_diagram.pdf', size: '2.4 MB' },
-        { id: 2, name: 'app_logic.js', size: '15 KB' },
-        { id: 3, name: 'brand_assets.zip', size: '12.8 MB' }
-    ]);
+    const [groupFiles, setGroupFiles] = useState([]);
 
     // Chat Tabs/Channels
     const [conversations, setConversations] = useState([
@@ -87,7 +83,16 @@ const Chat = ({ isDark, toggleTheme }) => {
             .eq('group_id', id);
         
         if (data) {
-            setRealMembers(data.map(m => {
+            // To get more info for fallbacks, we might need a join or additional fetch
+            // But for now let's use what we have and maybe fetch metadata if display_name is missing
+            const membersWithBetterNames = await Promise.all(data.map(async (m) => {
+                let name = m.display_name;
+                
+                // If DB display_name is null, it's an old record or joined before we started saving names
+                if (!name) {
+                    name = 'Member';
+                }
+
                 // Generate a consistent color based on user_id
                 let hash = 0;
                 for (let i = 0; i < m.user_id.length; i++) {
@@ -97,12 +102,13 @@ const Chat = ({ isDark, toggleTheme }) => {
 
                 return {
                     id: m.user_id,
-                    name: m.display_name || 'Member',
-                    avatar: (m.display_name || 'M').charAt(0),
+                    name: name,
+                    avatar: name.charAt(0).toUpperCase(),
                     color: color,
                     role: m.role
                 };
             }));
+            setRealMembers(membersWithBetterNames);
         }
     };
 
@@ -127,12 +133,18 @@ const Chat = ({ isDark, toggleTheme }) => {
     };
 
     const fetchGroupFiles = async () => {
-        const { data, error } = await supabase
-            .from('group_files')
-            .select('*')
-            .eq('group_id', id);
-        
-        if (data) setGroupFiles(data);
+        try {
+            const { data, error } = await supabase
+                .from('group_files')
+                .select('*')
+                .eq('group_id', id);
+            
+            if (error) throw error;
+            setGroupFiles(data || []);
+        } catch (err) {
+            console.error('Error fetching group files:', err);
+            setGroupFiles([]); // Fallback to empty on error
+        }
     };
 
     const fetchGroupDetails = async () => {
@@ -357,16 +369,20 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <Plus size={14} className="add-icon" onClick={() => setShowCreateModal(true)} />
                         </div>
                         <div className="nav-list">
-                            {conversations.filter(c => c.type === 'group').map(conv => (
-                                <button
-                                    key={conv.id}
-                                    className={`nav-item ${activeChatId === conv.id ? 'active' : ''}`}
-                                    onClick={() => setActiveChatId(conv.id)}
-                                >
-                                    {conv.icon}
-                                    <span>{conv.name}</span>
-                                </button>
-                            ))}
+                            {conversations.filter(c => c.type === 'group').length > 0 ? (
+                                conversations.filter(c => c.type === 'group').map(conv => (
+                                    <button
+                                        key={conv.id}
+                                        className={`nav-item ${activeChatId === conv.id ? 'active' : ''}`}
+                                        onClick={() => setActiveChatId(conv.id)}
+                                    >
+                                        {conv.icon}
+                                        <span>{conv.name}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="empty-sidebar-hint">No channels created yet.</div>
+                            )}
                         </div>
                     </div>
 
@@ -397,12 +413,16 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <span>GROUP FILES</span>
                         </div>
                         <div className="mini-file-list">
-                            {groupFiles.map(file => (
-                                <div key={file.id} className="file-pill" title={file.name || 'Unnamed File'}>
-                                    <FileText size={16} />
-                                    <span>{file.name || 'Unnamed File'}</span>
-                                </div>
-                            ))}
+                            {groupFiles.length > 0 ? (
+                                groupFiles.map(file => (
+                                    <div key={file.id} className="file-pill" title={file.name || 'Unnamed File'}>
+                                        <FileText size={16} />
+                                        <span>{file.name || 'Unnamed File'}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-sidebar-hint">No files shared yet.</div>
+                            )}
                         </div>
                     </div>
                 </aside>
@@ -626,15 +646,22 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <input type="text" placeholder="Search members..." />
                         </div>
                         <div className="modal-scroll-list">
-                            {realMembers.filter(m => m.id !== currentUser?.id).map(member => (
-                                <div key={member.id} className="dm-select-item" onClick={() => handleStartDM(member)}>
-                                    <div className="member-avatar" style={{ backgroundColor: member.color }}>{member.avatar}</div>
-                                    <div className="dm-item-info">
-                                        <span className="dm-name">{member.name}</span>
+                            {realMembers.filter(m => m.id !== currentUser?.id).length > 0 ? (
+                                realMembers.filter(m => m.id !== currentUser?.id).map(member => (
+                                    <div key={member.id} className="dm-select-item" onClick={() => handleStartDM(member)}>
+                                        <div className="member-avatar" style={{ backgroundColor: member.color }}>{member.avatar}</div>
+                                        <div className="dm-item-info">
+                                            <span className="dm-name">{member.name}</span>
+                                        </div>
+                                        <MessageSquare size={16} className="dm-icon-hint" />
                                     </div>
-                                    <MessageSquare size={16} className="dm-icon-hint" />
+                                ))
+                            ) : (
+                                <div className="modal-empty-state">
+                                    <Users size={40} opacity={0.2} />
+                                    <p>No other members in this group yet.</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
