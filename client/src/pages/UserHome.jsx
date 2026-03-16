@@ -21,9 +21,9 @@ const UserHome = ({ isDark, toggleTheme }) => {
         const fetchUser = async () => {
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
-                setUser({
-                    name: authUser.user_metadata?.full_name || authUser.email.split('@')[0]
-                });
+                const name = authUser.user_metadata?.full_name || authUser.email.split('@')[0];
+                setUser({ name });
+                localStorage.setItem('userName', name);
             }
         };
         fetchUser();
