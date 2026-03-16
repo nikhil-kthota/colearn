@@ -16,21 +16,50 @@ const MyGroups = () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
-                const { data, error } = await supabase
+                // 1. Fetch groups created by the user
+                const { data: createdGroups, error: createdError } = await supabase
                     .from('collab_groups')
                     .select('*')
-                    .eq('created_by', user.id)
-                    .order('created_at', { ascending: false });
+                    .eq('created_by', user.id);
 
-                if (!error && data) {
-                    setGroups(data.map(g => ({
-                        id: g.group_id,
-                        name: g.group_name,
-                        type: g.type,
-                        members: 1, // Placeholder for now
-                        lastUsed: new Date(g.created_at).toLocaleDateString()
-                    })));
+                // 2. Fetch groups the user has joined via group_members
+                const { data: joinedMemberships, error: joinedError } = await supabase
+                    .from('group_members')
+                    .select(`
+                        group_id,
+                        collab_groups!inner (
+                            *
+                        )
+                    `)
+                    .eq('user_id', user.id);
+
+                let allGroupsMap = new Map();
+
+                if (!createdError && createdGroups) {
+                    createdGroups.forEach(g => {
+                        allGroupsMap.set(g.group_id, g);
+                    });
                 }
+
+                if (!joinedError && joinedMemberships) {
+                    joinedMemberships.forEach(m => {
+                        const g = m.collab_groups;
+                        if (g) {
+                            allGroupsMap.set(g.group_id, g);
+                        }
+                    });
+                }
+
+                const mergedGroups = Array.from(allGroupsMap.values())
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                setGroups(mergedGroups.map(g => ({
+                    id: g.group_id,
+                    name: g.group_name,
+                    type: g.type,
+                    members: 1, // You could fetch group member counts here if wanted
+                    lastUsed: new Date(g.created_at).toLocaleDateString()
+                })));
             } catch (err) {
                 console.error('Error fetching groups:', err);
             } finally {

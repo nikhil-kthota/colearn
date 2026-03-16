@@ -49,6 +49,13 @@ const Profile = ({ isDark, toggleTheme }) => {
                 .select('*', { count: 'exact', head: true })
                 .eq('created_by', authUser.id);
 
+            // Fetch groups joined by this user, excluding groups they created to avoid double counting
+            const { count: groupsJoined } = await supabase
+                .from('group_members')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', authUser.id)
+                .neq('role', 'Admin');
+
             // Fetch AI models for this user
             const { data: aiModels, error: modelsError } = await supabase
                 .from('user_ai_models')
@@ -63,7 +70,7 @@ const Profile = ({ isDark, toggleTheme }) => {
                 email: authUser.email,
                 joinedDate: new Date(authUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
                 groupsCreated: groupsCreated || 0,
-                groupsJoined: 0, // This would require a junction table like 'group_members'
+                groupsJoined: groupsJoined || 0,
                 models: aiModels || []
             };
 

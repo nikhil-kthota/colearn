@@ -38,6 +38,13 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 }
                 return;
             }
+            
+            // Add creator to group_members
+            await supabase.from('group_members').insert([{
+                group_id: groupId,
+                user_id: authUser.id,
+                role: 'Admin'
+            }]);
 
             const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}&creating=true`;
             window.open(url, '_blank');
@@ -66,6 +73,18 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             if (data.group_key !== groupKey) {
                 alert('Incorrect Group Key (PIN).');
                 return;
+            }
+
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                const { error: joinError } = await supabase.from('group_members').insert([{
+                    group_id: groupId,
+                    user_id: authUser.id,
+                    role: 'Member'
+                }]);
+                if (joinError && joinError.code !== '23505') {
+                    console.warn('Error joining group_members:', joinError);
+                }
             }
 
             const savedName = localStorage.getItem('userName') || 'User';
@@ -106,6 +125,13 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 return;
             }
 
+            // Add creator to group_members
+            await supabase.from('group_members').insert([{
+                group_id: groupId,
+                user_id: authUser.id,
+                role: 'Admin'
+            }]);
+
             navigate(`/group/${groupId}`);
         } catch (err) {
             console.error('Unexpected error:', err);
@@ -132,6 +158,18 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             if (data.group_key !== groupKey) {
                 alert('Incorrect Group Key (PIN).');
                 return;
+            }
+
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                const { error: joinError } = await supabase.from('group_members').insert([{
+                    group_id: groupId,
+                    user_id: authUser.id,
+                    role: 'Member'
+                }]);
+                if (joinError && joinError.code !== '23505') {
+                    console.warn('Error joining group_members:', joinError);
+                }
             }
 
             navigate(`/group/${groupId}`);
