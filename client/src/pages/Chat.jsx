@@ -83,17 +83,18 @@ const Chat = ({ isDark, toggleTheme }) => {
             .eq('group_id', id);
         
         if (data) {
-            // To get more info for fallbacks, we might need a join or additional fetch
-            // But for now let's use what we have and maybe fetch metadata if display_name is missing
             const membersWithBetterNames = await Promise.all(data.map(async (m) => {
                 let name = m.display_name;
                 
-                // If DB display_name is null, it's an old record or joined before we started saving names
+                // If DB display_name is null, try to use currentUser info if it's the same person
+                if (!name && m.user_id === currentUser?.id) {
+                    name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0];
+                }
+                
                 if (!name) {
                     name = 'Member';
                 }
 
-                // Generate a consistent color based on user_id
                 let hash = 0;
                 for (let i = 0; i < m.user_id.length; i++) {
                     hash = m.user_id.charCodeAt(i) + ((hash << 5) - hash);
@@ -140,10 +141,11 @@ const Chat = ({ isDark, toggleTheme }) => {
                 .eq('group_id', id);
             
             if (error) throw error;
+            console.log('Group Files fetched:', data);
             setGroupFiles(data || []);
         } catch (err) {
             console.error('Error fetching group files:', err);
-            setGroupFiles([]); // Fallback to empty on error
+            setGroupFiles([]); 
         }
     };
 
@@ -415,9 +417,9 @@ const Chat = ({ isDark, toggleTheme }) => {
                         <div className="mini-file-list">
                             {groupFiles.length > 0 ? (
                                 groupFiles.map(file => (
-                                    <div key={file.id} className="file-pill" title={file.name || 'Unnamed File'}>
+                                    <div key={file.id} className="file-pill" title={file.name || file.file_name || file.filename || 'Unnamed File'}>
                                         <FileText size={16} />
-                                        <span>{file.name || 'Unnamed File'}</span>
+                                        <span>{file.name || file.file_name || file.filename || 'Unnamed File'}</span>
                                     </div>
                                 ))
                             ) : (
