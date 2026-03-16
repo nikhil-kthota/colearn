@@ -20,8 +20,8 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         navigate('/');
     };
 
-    const [members, setMembers] = useState([]);
-    const [onlineUserIds, setOnlineUserIds] = useState(new Set());
+    const [dbMembers, setDbMembers] = useState([]);
+    const [presenceMap, setPresenceMap] = useState({}); // { userId: { name, role } }
 
     // Fetch all registered members from DB
     useEffect(() => {
@@ -32,9 +32,9 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                 .select('user_id, role, display_name')
                 .eq('group_id', id);
             if (!error && data) {
-                setMembers(data.map(m => ({
+                setDbMembers(data.map(m => ({
                     id: m.user_id,
-                    name: m.display_name || 'Member',
+                    name: m.display_name || null, // could be null for old records
                     role: m.role || 'Member'
                 })));
             }
@@ -42,7 +42,7 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         fetchMembers();
     }, [id]);
 
-    // Track who is currently online via Presence
+    // Track who is online via Presence (includes real names)
     useEffect(() => {
         if (!id) return;
         let channel;
@@ -67,7 +67,15 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
             channel
                 .on('presence', { event: 'sync' }, () => {
                     const presenceState = channel.presenceState();
-                    setOnlineUserIds(new Set(Object.keys(presenceState)));
+                    // Build a map of userId -> {name, role} from presence
+                    const map = {};
+                    for (const userId in presenceState) {
+                        const entries = presenceState[userId];
+                        if (entries.length > 0) {
+                            map[userId] = { name: entries[0].name, role: entries[0].role };
+                        }
+                    }
+                    setPresenceMap(map);
                 })
                 .subscribe(async (status) => {
                     if (status === 'SUBSCRIBED') {
@@ -86,6 +94,14 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
             if (channel) supabase.removeChannel(channel);
         };
     }, [id]);
+
+    // Merge DB members with presence data — presence names take priority
+    const members = dbMembers.map(m => ({
+        ...m,
+        name: presenceMap[m.id]?.name || m.name || 'Member',
+        isOnline: !!presenceMap[m.id]
+    }));
+    const onlineCount = Object.keys(presenceMap).length;
 
     return (
         <nav className="group-navbar">
@@ -113,20 +129,18 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                             <div className="dropdown-header">
                                 Group Members
                                 <span style={{ opacity: 0.5, fontSize: '0.75rem', fontWeight: 400 }}>
-                                    {' '}· {onlineUserIds.size} online
+                                    {' '}· {onlineCount} online
                                 </span>
                             </div>
                             {members.length === 0 ? (
                                 <div className="member-item" style={{ opacity: 0.5, fontSize: '0.8rem' }}>No members yet</div>
                             ) : members.map(member => {
-                                const isOnline = onlineUserIds.has(member.id);
                                 const firstName = member.name.split(' ')[0];
-                                const isCurrentUser = [...onlineUserIds].length > 0 && isOnline && member.id === member.id;
                                 return (
                                     <div key={member.id} className="member-item" title={member.name}>
                                         <div className="member-avatar-wrapper" style={{ position: 'relative' }}>
                                             <div className="member-avatar">{member.name.charAt(0)}</div>
-                                            {isOnline && (
+                                            {member.isOnline && (
                                                 <span style={{
                                                     position: 'absolute', bottom: 0, right: 0,
                                                     width: '9px', height: '9px',

@@ -10,6 +10,7 @@ const Profile = ({ isDark, toggleTheme }) => {
     const [showMainPassword, setShowMainPassword] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' }
 
     // Model editing states
     const [editingModelId, setEditingModelId] = useState(null);
@@ -30,6 +31,11 @@ const Profile = ({ isDark, toggleTheme }) => {
     });
 
     const [formData, setFormData] = useState({ ...user });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3500);
+    };
 
     useEffect(() => {
         fetchUserData();
@@ -106,10 +112,10 @@ const Profile = ({ isDark, toggleTheme }) => {
 
             setUser({ ...formData });
             setIsEditing(false);
-            alert('Profile updated successfully!');
+            showToast('Profile updated successfully! ✓');
         } catch (err) {
             console.error('Error updating profile:', err);
-            alert('Failed to update profile.');
+            showToast('Failed to update profile.', 'error');
         }
     };
 
@@ -251,6 +257,13 @@ const Profile = ({ isDark, toggleTheme }) => {
 
     return (
         <div className="profile-page-wrapper">
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`profile-toast profile-toast-${toast.type}`}>
+                    <span>{toast.message}</span>
+                </div>
+            )}
+
             <button className="back-btn" onClick={() => navigate(-1)}>
                 <ArrowLeft size={20} />
                 <span>Back</span>
@@ -267,8 +280,13 @@ const Profile = ({ isDark, toggleTheme }) => {
 
             {loading ? (
                 <div className="profile-loading">
-                    <Loader2 className="animate-spin" size={48} />
-                    <p>Loading your profile...</p>
+                    <div className="profile-loading-orb">
+                        <div className="profile-loading-ring" />
+                        <div className="profile-loading-ring profile-loading-ring-2" />
+                        <span className="profile-loading-initials">CL</span>
+                    </div>
+                    <p className="profile-loading-text">Loading your profile...</p>
+                    <p className="profile-loading-sub">Fetching your data from the cloud</p>
                 </div>
             ) : (
                 <main className="profile-content">
