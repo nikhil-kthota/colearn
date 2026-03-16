@@ -60,39 +60,57 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [currentGroupName, setCurrentGroupName] = useState('Loading...');
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const initializeChat = async () => {
+            // 1. Get User
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) setCurrentUser(user);
+            let resolvedUser = null;
+            if (user) {
+                resolvedUser = user;
+                setCurrentUser(user);
+                
+                // 2. Sync Name (Backfill missing names)
+                const name = user.user_metadata?.full_name || user.email?.split('@')[0];
+                await supabase
+                    .from('group_members')
+                    .update({ display_name: name })
+                    .eq('group_id', id)
+                    .eq('user_id', user.id)
+                    .is('display_name', null);
+            }
+
+            // 3. Fetch Rest
+            fetchGroupDetails();
+            fetchMembers(resolvedUser); // Pass user directly to avoid state lag
+            fetchChannels();
+            fetchGroupFiles();
+            fetchMessages();
         };
-        fetchUser();
-        fetchGroupDetails();
-        fetchMembers();
-        fetchChannels();
-        fetchGroupFiles();
-        fetchMessages();
+
+        initializeChat();
+        
         const subscription = subscribeToMessages();
         return () => {
             subscription.unsubscribe();
         };
     }, [id, activeChatId]);
 
-    const fetchMembers = async () => {
+    const fetchMembers = async (userOverride = null) => {
+        const targetUser = userOverride || currentUser;
         const { data, error } = await supabase
             .from('group_members')
             .select('user_id, role, display_name')
             .eq('group_id', id);
         
         if (data) {
-            const membersWithBetterNames = await Promise.all(data.map(async (m) => {
+            const membersWithBetterNames = data.map(m => {
                 let name = m.display_name;
                 
-                // If DB display_name is null, try to use currentUser info if it's the same person
-                if (!name && m.user_id === currentUser?.id) {
-                    name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0];
-                }
-                
-                if (!name) {
-                    name = 'Member';
+                if (!name || name === 'Member') {
+                    if (m.user_id === targetUser?.id) {
+                        name = targetUser.user_metadata?.full_name || targetUser.email?.split('@')[0];
+                    } else {
+                        name = 'Group Member';
+                    }
                 }
 
                 let hash = 0;
@@ -108,7 +126,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                     color: color,
                     role: m.role
                 };
-            }));
+            });
             setRealMembers(membersWithBetterNames);
         }
     };
