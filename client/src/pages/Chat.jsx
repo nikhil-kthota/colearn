@@ -34,9 +34,7 @@ const Chat = ({ isDark, toggleTheme }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showFileSuggestions, setShowFileSuggestions] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [showCreateModal, setShowCreateModal] = useState(false);
     const [showDMModal, setShowDMModal] = useState(false);
-    const [newChannelName, setNewChannelName] = useState('');
     const [selectedMembers, setSelectedMembers] = useState([]);
     const chatEndRef = useRef(null);
     const imageInputRef = useRef(null);
@@ -61,19 +59,17 @@ const Chat = ({ isDark, toggleTheme }) => {
                 setCurrentUser(user);
 
                 // 1. Fetch all base data
-                const [groupDetails, groupMembers, groupFiles, channels, threads, allMsgs] = await Promise.all([
+                const [groupDetails, groupMembers, groupFiles, threads, allMsgs] = await Promise.all([
                     fetchGroupDetails(),
                     fetchMembers(),
                     fetchGroupFiles(),
-                    fetchChannels(),
                     fetchThreads(user.id),
                     fetchMessagesOnly()
                 ]);
 
-                // 2. Build Sidebar (Channels first)
+                // 2. Build Sidebar (General first)
                 const baseConversations = [
-                    { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> },
-                    ...channels.map(c => ({ id: c.id, name: c.name, type: 'group', icon: <Hash size={18} /> }))
+                    { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> }
                 ];
 
                 // 3. Build Sidebar (DMs from Threads table)
@@ -205,14 +201,6 @@ const Chat = ({ isDark, toggleTheme }) => {
         return data || [];
     };
 
-    const fetchChannels = async () => {
-        const { data } = await supabase
-            .from('group_channels')
-            .select('*')
-            .eq('group_id', id);
-        return data || [];
-    };
-
     const fetchMessagesOnly = async () => {
         const { data } = await supabase
             .from('group_messages')
@@ -336,34 +324,6 @@ const Chat = ({ isDark, toggleTheme }) => {
         }
     };
 
-    const handleCreateChannel = async (e) => {
-        e.preventDefault();
-        if (newChannelName.trim()) {
-            const { data, error } = await supabase
-                .from('group_channels')
-                .insert([{
-                    group_id: id,
-                    name: newChannelName,
-                    type: 'group'
-                }])
-                .select()
-                .single();
-
-            if (!error && data) {
-                const newConv = {
-                    id: data.id,
-                    name: data.name,
-                    type: 'group',
-                    icon: <Hash size={18} />
-                };
-                setConversations([...conversations, newConv]);
-                setActiveChatId(data.id);
-            }
-            setNewChannelName('');
-            setShowCreateModal(false);
-        }
-    };
-
     const handleStartDM = async (member) => {
         const myId = currentUser.id;
         const otherId = member.id;
@@ -432,8 +392,7 @@ const Chat = ({ isDark, toggleTheme }) => {
 
                     <div className="sidebar-section">
                         <div className="section-header">
-                            <span>CHANNELS</span>
-                            <Plus size={14} className="add-icon" onClick={() => setShowCreateModal(true)} />
+                            <span>CHATS</span>
                         </div>
                         <div className="nav-list">
                             {conversations.filter(c => c.type === 'group').map(conv => (
@@ -621,33 +580,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                     </footer>
                 </section>
             </main>
-
-            {showCreateModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content glass-morphism fade-in">
-                        <div className="modal-header">
-                            <h3>Create New Channel</h3>
-                            <button className="close-modal" onClick={() => setShowCreateModal(false)}><X size={20} /></button>
-                        </div>
-                        <form onSubmit={handleCreateChannel}>
-                            <div className="form-group">
-                                <label>Channel Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Frontend Squad"
-                                    value={newChannelName}
-                                    onChange={(e) => setNewChannelName(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn-secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
-                                <button type="submit" className="btn-primary" disabled={!newChannelName.trim()}>Create Channel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {showDMModal && (
                 <div className="modal-overlay">
