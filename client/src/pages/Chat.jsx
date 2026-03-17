@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import GroupNavbar from '../components/group/GroupNavbar';
+import LoadingScreen from '../components/common/LoadingScreen';
 import { supabase } from '../supabase';
 import '../styles/Chat.css';
 
@@ -41,58 +42,120 @@ const Chat = ({ isDark, toggleTheme }) => {
     const imageInputRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    // Mock data for members
-    const members = [
-        { id: 1, name: "John Doe", avatar: "JD", color: "#3b82f6", status: "online" },
-        { id: 2, name: "Alice Smith", avatar: "AS", color: "#10b981", status: "online" },
-        { id: 3, name: "Bob Wilson", avatar: "BW", color: "#f59e0b", status: "offline" },
-        { id: 4, name: "Charlie Davis", avatar: "CD", color: "#8b5cf6", status: "online" }
-    ];
-
-    // Mock data for group files
-    const groupFiles = [
-        { id: 1, name: 'architecture_diagram.pdf', size: '2.4 MB' },
-        { id: 2, name: 'app_logic.js', size: '15 KB' },
-        { id: 3, name: 'brand_assets.zip', size: '12.8 MB' }
-    ];
-
-    // Chat Tabs/Channels
+    const [members, setMembers] = useState([]);
+    const [groupFiles, setGroupFiles] = useState([]);
     const [conversations, setConversations] = useState([
-        { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> },
-        { id: 'alice', name: 'Alice Smith', type: 'dm', memberId: 2, icon: <User size={18} /> },
-        { id: 'frontend-team', name: 'Frontend Squad', type: 'group', icon: <Users size={18} /> }
+        { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> }
     ]);
-
     const [activeChatId, setActiveChatId] = useState('general');
-
-    // Mock messages per conversation
-    const [chatMessages, setChatMessages] = useState({
-        'general': [
-            { id: 1, user: members[1], text: 'Welcome to the team! Check #architecture_diagram.pdf', time: '12:45 PM' },
-            { id: 2, user: members[0], text: 'Thanks @Alice! Looking into it.', time: '12:47 PM' }
-        ],
-        'alice': [
-            { id: 1, user: members[1], text: 'Hey John, do you have a second to review the PR?', time: '10:30 AM' }
-        ],
-        'frontend-team': [
-            { id: 1, user: members[3], text: 'Starting the sprint planning meeting in 5 mins.', time: '11:00 AM' }
-        ]
-    });
-
+    const [chatMessages, setChatMessages] = useState({});
     const [loading, setLoading] = useState(true);
     const [currentGroupName, setCurrentGroupName] = useState('Loading...');
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
-        fetchGroupDetails();
-        fetchMessages();
-        const subscription = subscribeToMessages();
-        return () => {
-            subscription.unsubscribe();
+        const init = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                setCurrentUser(user);
+
+                // 1. Fetch all base data
+                const [groupDetails, groupMembers, groupFiles, channels, threads, allMsgs] = await Promise.all([
+                    fetchGroupDetails(),
+                    fetchMembers(),
+                    fetchGroupFiles(),
+                    fetchChannels(),
+                    fetchThreads(user.id),
+                    fetchMessagesOnly()
+                ]);
+
+                // 2. Build Sidebar (Channels first)
+                const baseConversations = [
+                    { id: 'general', name: 'General Chat', type: 'group', icon: <Hash size={18} /> },
+                    ...channels.map(c => ({ id: c.id, name: c.name, type: 'group', icon: <Hash size={18} /> }))
+                ];
+
+                // 3. Build Sidebar (DMs from Threads table)
+                const dmConvs = threads.map(thread => {
+                    const otherId = thread.participant_one === user.id ? thread.participant_two : thread.participant_one;
+                    const member = groupMembers.find(m => m.id === otherId);
+                    return {
+                        id: thread.id,
+                        name: member ? member.name : 'User',
+                        type: 'dm',
+                        memberId: otherId,
+                        icon: <User size={18} />
+                    };
+                }).filter(Boolean);
+
+                setConversations([...baseConversations, ...dmConvs]);
+
+                // 4. Group existing messages
+                const groupedMessages = {};
+                allMsgs.forEach(msg => {
+                    const cid = msg.channel_id || 'general';
+                    if (!groupedMessages[cid]) groupedMessages[cid] = [];
+                    groupedMessages[cid].push(msg);
+                });
+
+                setChatMessages(groupedMessages);
+                setLoading(false);
+            } catch (err) {
+                console.error("Chat Init Error:", err);
+                setLoading(false);
+            }
         };
-    }, [id, activeChatId]);
+        init();
+
+        const channel = supabase
+            .channel(`group_chat:${id}`)
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'group_messages',
+                filter: `group_id=eq.${id}`
+            }, payload => {
+                const msg = payload.new;
+                const cid = msg.channel_id || 'general';
+                
+                // Ensure DM conversation exists in sidebar for receiver
+                if (cid.startsWith('dm_')) {
+                    setConversations(prev => {
+                        if (prev.find(c => c.id === cid)) return prev;
+                        const otherId = cid.split('_').find(uuid => uuid !== (currentUser?.id || ''));
+                        const member = members.find(m => m.id === otherId);
+                        if (member) {
+                            return [...prev, {
+                                id: cid,
+                                name: member.name,
+                                type: 'dm',
+                                memberId: otherId,
+                                icon: <User size={18} />
+                            }];
+                        }
+                        return prev;
+                    });
+                }
+
+                setChatMessages(prev => ({
+                    ...prev,
+                    [cid]: [...(prev[cid] || []), msg]
+                }));
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [id]);
+
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatMessages, activeChatId]);
 
     const fetchGroupDetails = async () => {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('collab_groups')
             .select('group_name')
             .eq('group_id', id)
@@ -100,69 +163,133 @@ const Chat = ({ isDark, toggleTheme }) => {
         if (data) setCurrentGroupName(data.group_name);
     };
 
-    const fetchMessages = async () => {
-        const { data, error } = await supabase
+    const fetchMembers = async () => {
+        const { data } = await supabase
+            .from('group_members')
+            .select('*')
+            .eq('group_id', id);
+        if (data) {
+            const m = data.map(m => ({
+                id: m.user_id,
+                name: m.user_name,
+                avatar: m.user_name?.substring(0, 2).toUpperCase(),
+                color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+                status: 'online'
+            }));
+            setMembers(m);
+            return m;
+        }
+        return [];
+    };
+
+    const fetchGroupFiles = async () => {
+        const { data } = await supabase
+            .from('group_files')
+            .select('*')
+            .eq('group_id', id);
+        if (data) {
+            setGroupFiles(data.map(f => ({
+                id: f.id,
+                name: f.file_name,
+                size: (f.file_size / 1024).toFixed(1) + ' KB'
+            })));
+        }
+    };
+
+    const fetchThreads = async (userId) => {
+        const { data } = await supabase
+            .from('group_chat_threads')
+            .select('*')
+            .eq('group_id', id)
+            .or(`participant_one.eq.${userId},participant_two.eq.${userId}`);
+        return data || [];
+    };
+
+    const fetchChannels = async () => {
+        const { data } = await supabase
+            .from('group_channels')
+            .select('*')
+            .eq('group_id', id);
+        return data || [];
+    };
+
+    const fetchMessagesOnly = async () => {
+        const { data } = await supabase
             .from('group_messages')
             .select('*')
             .eq('group_id', id)
             .order('created_at', { ascending: true });
-
-        if (data) {
-            // Transform data if needed or group by channel (placeholder for now)
-            setChatMessages({ 'general': data });
-        }
-        setLoading(false);
-    };
-
-    const subscribeToMessages = () => {
-        return supabase
-            .channel('public:group_messages')
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'group_messages',
-                filter: `group_id=eq.${id}`
-            }, payload => {
-                setChatMessages(prev => ({
-                    ...prev,
-                    ['general']: [...(prev['general'] || []), payload.new]
-                }));
-            })
-            .subscribe();
+        return data || [];
     };
 
     const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (message.trim() || attachedImage || attachedFile) {
+        if (e) e.preventDefault();
+        if (!message.trim() && !attachedImage && !attachedFile) return;
+
+        try {
+            let imageUrl = null;
+            let fileUrl = null;
+            let fileName = null;
+
+            if (attachedImage && attachedImage.startsWith('data:')) {
+                // Upload image
+                const blob = await (await fetch(attachedImage)).blob();
+                const path = `chat/${id}/${Date.now()}_img.png`;
+                const { data, error } = await supabase.storage.from('group-assets').upload(path, blob);
+                if (!error) {
+                    const { data: urlData } = supabase.storage.from('group-assets').getPublicUrl(path);
+                    imageUrl = urlData.publicUrl;
+                }
+            }
+
             const { data: { user } } = await supabase.auth.getUser();
             
+            let recipientId = null;
+            if (activeChatId.startsWith('dm_')) {
+                // Correctly extract other user ID (skip the 'dm' prefix)
+                recipientId = activeChatId.split('_').filter(part => part !== 'dm' && part !== user.id)[0];
+            }
+
+            // Get user's current avatar URL from the members list or metadata
+            const myMemberData = members.find(m => m.id === user.id);
+            const userAvatar = myMemberData?.user_avatar || user.user_metadata?.avatar_url || null;
+
             const newMessage = {
                 group_id: id,
                 user_id: user.id,
-                user_name: user.user_metadata?.full_name || user.email,
+                user_name: localStorage.getItem('userName') || user.user_metadata?.full_name || user.email,
+                user_avatar: userAvatar, 
                 text: message,
-                // image_url: attachedImage, // Would upload to storage first
-                // file_url: attachedFile, // Would upload to storage first
+                channel_id: activeChatId,
+                recipient_id: recipientId,
+                image_url: imageUrl,
+                file_url: fileUrl,
+                file_name: fileName,
+                created_at: new Date().toISOString()
             };
 
             const { error } = await supabase
                 .from('group_messages')
                 .insert([newMessage]);
 
-            if (error) console.error('Error sending message:', error);
+            if (error) {
+                console.error("Supabase Message Error Details:", error);
+                throw error;
+            }
 
             setMessage('');
             setAttachedImage(null);
             setAttachedFile(null);
             setShowFileSuggestions(false);
+            setShowEmojiPicker(false);
+        } catch (err) {
+            console.error('Error sending message:', err);
         }
     };
 
     const handleInputChange = (e) => {
         const val = e.target.value;
         setMessage(val);
-
-        // Show suggestions if the last character is @
         if (val.endsWith('@')) {
             setShowFileSuggestions(true);
         } else if (!val.includes('@') || val.endsWith(' ')) {
@@ -170,11 +297,22 @@ const Chat = ({ isDark, toggleTheme }) => {
         }
     };
 
+    const handlePaste = (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => setAttachedImage(event.target.result);
+                reader.readAsDataURL(blob);
+            }
+        }
+    };
+
     const insertFileMention = (fileName) => {
         const parts = message.split('@');
-        parts.pop(); // Remove the trailing @
-        const newMessage = parts.join('@') + '#' + fileName + ' ';
-        setMessage(newMessage);
+        parts.pop();
+        setMessage(parts.join('@') + '#' + fileName + ' ');
         setShowFileSuggestions(false);
     };
 
@@ -198,69 +336,73 @@ const Chat = ({ isDark, toggleTheme }) => {
         }
     };
 
-    const handleCreateChannel = (e) => {
+    const handleCreateChannel = async (e) => {
         e.preventDefault();
         if (newChannelName.trim()) {
-            const newId = newChannelName.toLowerCase().replace(/\s+/g, '-');
-            const newConv = {
-                id: newId,
-                name: newChannelName,
-                type: 'group',
-                icon: <Users size={18} />
-            };
-            setConversations([...conversations, newConv]);
-            setChatMessages({ ...chatMessages, [newId]: [] });
-            setActiveChatId(newId);
+            const { data, error } = await supabase
+                .from('group_channels')
+                .insert([{
+                    group_id: id,
+                    name: newChannelName,
+                    type: 'group'
+                }])
+                .select()
+                .single();
+
+            if (!error && data) {
+                const newConv = {
+                    id: data.id,
+                    name: data.name,
+                    type: 'group',
+                    icon: <Hash size={18} />
+                };
+                setConversations([...conversations, newConv]);
+                setActiveChatId(data.id);
+            }
             setNewChannelName('');
-            setSelectedMembers([]);
             setShowCreateModal(false);
         }
     };
 
-    const handleStartDM = (member) => {
-        const existingDM = conversations.find(c => c.type === 'dm' && c.memberId === member.id);
-        if (existingDM) {
-            setActiveChatId(existingDM.id);
-        } else {
-            const newId = `dm-${member.id}`;
+    const handleStartDM = async (member) => {
+        const myId = currentUser.id;
+        const otherId = member.id;
+        const dmId = `dm_${[myId, otherId].sort().join('_')}`;
+
+        // Register the thread in the DB if it doesn't exist
+        const { error } = await supabase
+            .from('group_chat_threads')
+            .upsert([{ 
+                id: dmId, 
+                group_id: id, 
+                participant_one: [myId, otherId].sort()[0],
+                participant_two: [myId, otherId].sort()[1] 
+            }], { onConflict: 'id' });
+
+        if (error) console.error("Error creating DM thread:", error);
+
+        const existingDM = conversations.find(c => c.id === dmId);
+        if (!existingDM) {
             const newConv = {
-                id: newId,
+                id: dmId,
                 name: member.name,
                 type: 'dm',
-                memberId: member.id,
+                memberId: otherId,
                 icon: <User size={18} />
             };
             setConversations([...conversations, newConv]);
-            setActiveChatId(newId);
         }
+        setActiveChatId(dmId);
         setShowDMModal(false);
         setIsSidebarOpen(false);
-    };
-
-    const toggleMemberSelection = (id) => {
-        setSelectedMembers(prev =>
-            prev.includes(id) ? prev.filter(mid => mid !== id) : [...prev, id]
-        );
-    };
-
-    const handlePaste = (e) => {
-        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (const item of items) {
-            if (item.type.indexOf('image') !== -1) {
-                const blob = item.getAsFile();
-                const reader = new FileReader();
-                reader.onload = (event) => setAttachedImage(event.target.result);
-                reader.readAsDataURL(blob);
-            }
-        }
     };
 
     const addEmoji = (emojiData) => {
         setMessage(prev => prev + emojiData.emoji);
     };
 
-
     const parseMentions = (text) => {
+        if (!text) return '';
         return text.split(' ').map((word, i) => {
             if (word.startsWith('@')) return <span key={i} className="mention-user">{word} </span>;
             if (word.startsWith('#')) return <span key={i} className="mention-file">{word} </span>;
@@ -268,19 +410,18 @@ const Chat = ({ isDark, toggleTheme }) => {
         });
     };
 
-    // Removed static groupNames mapping
-
+    const activeChat = conversations.find(c => c.id === activeChatId) || conversations[0];
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+    if (loading) return <LoadingScreen message={`Connecting to ${currentGroupName === 'Loading...' ? 'Chat' : currentGroupName}...`} />;
 
     return (
         <div className="chat-layout">
-            <GroupNavbar groupName={currentGroupName} isDark={isDark} toggleTheme={toggleTheme} />
+            <GroupNavbar groupName={currentGroupName} isDark={isDark} toggleTheme={toggleTheme} currentUser={currentUser} />
 
             <main className="chat-main">
-                {/* Mobile Sidebar Overlay Backdrop */}
                 {isSidebarOpen && <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
 
-                {/* Sidebar: Navigation + Channels */}
                 <aside className={`chat-nav-sidebar ${isSidebarOpen ? 'open' : ''}`}>
                     <div className="sidebar-mobile-header">
                         <span>Navigation</span>
@@ -345,7 +486,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                     </div>
                 </aside>
 
-                {/* Main Content Area */}
                 <section className="chat-window">
                     <header className="window-header">
                         <div className="header-left">
@@ -360,9 +500,9 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <div className="active-chat-info">
                                 <span className="chat-title">{activeChat?.name}</span>
                                 <span className="member-count">
-                                    {activeChat?.type === 'group'
-                                        ? members.map(m => m.name).join(', ')
-                                        : members.find(m => m.id === activeChat?.memberId)?.status === 'online' ? 'Active now' : 'Offline'
+                                    {activeChat?.type === 'group' 
+                                        ? `${members.length} members`
+                                        : 'Active now'
                                     }
                                 </span>
                             </div>
@@ -372,9 +512,13 @@ const Chat = ({ isDark, toggleTheme }) => {
                     <div className="chat-scroller">
                         <div className="chat-messages-list">
                             {(chatMessages[activeChatId] || []).map((msg) => (
-                                <div key={msg.id} className={`chat-message ${msg.user_id === members[0].id ? 'mine' : ''}`}>
-                                    <div className="message-avatar" style={{ backgroundColor: '#ccc' }}>
-                                        {msg.user_name?.substring(0, 2).toUpperCase()}
+                                <div key={msg.id} className={`chat-message ${msg.user_id === currentUser?.id ? 'mine' : ''}`}>
+                                    <div className="message-avatar" style={{ backgroundColor: '#2dd4bf', overflow: 'hidden' }}>
+                                        {msg.user_avatar ? (
+                                            <img src={msg.user_avatar} alt="" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                                        ) : (
+                                            msg.user_name?.substring(0, 2).toUpperCase()
+                                        )}
                                     </div>
                                     <div className="message-body">
                                         <div className="message-header">
@@ -384,15 +528,7 @@ const Chat = ({ isDark, toggleTheme }) => {
                                         <div className="message-bubble">
                                             {msg.image_url && (
                                                 <div className="message-image">
-                                                    <img src={msg.image_url} alt="Uploaded" />
-                                                </div>
-                                            )}
-                                            {msg.file_url && (
-                                                <div className="message-file">
-                                                    <FileText size={18} />
-                                                    <div className="msg-file-info">
-                                                        <span className="msg-file-name">File Attachment</span>
-                                                    </div>
+                                                    <img src={msg.image_url} alt="Uploaded" loading="lazy" />
                                                 </div>
                                             )}
                                             <p>{parseMentions(msg.text)}</p>
@@ -431,13 +567,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                                 <button className="remove-img" onClick={() => setAttachedImage(null)}><X size={14} /></button>
                             </div>
                         )}
-                        {attachedFile && (
-                            <div className="file-preview-pill fade-in">
-                                <FileText size={16} />
-                                <span className="preview-file-name">{attachedFile.name}</span>
-                                <button className="remove-file" onClick={() => setAttachedFile(null)}><X size={14} /></button>
-                            </div>
-                        )}
                         <form className="composer-container" onSubmit={handleSendMessage}>
                             <div className="composer-actions">
                                 <button
@@ -464,9 +593,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                                 <button type="button" className="action-btn" onClick={() => imageInputRef.current?.click()}>
                                     <ImageIcon size={20} />
                                 </button>
-                                <button type="button" className="action-btn" onClick={() => fileInputRef.current?.click()}>
-                                    <Paperclip size={20} />
-                                </button>
                             </div>
 
                             <input
@@ -486,15 +612,8 @@ const Chat = ({ isDark, toggleTheme }) => {
                                 onChange={handleImageUpload}
                             />
 
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                style={{ display: 'none' }}
-                                onChange={handleFileUpload}
-                            />
-
                             <div className="composer-actions right">
-                                <button type="submit" className="send-trigger" disabled={!message.trim() && !attachedImage && !attachedFile}>
+                                <button type="submit" className="send-trigger" disabled={!message.trim() && !attachedImage}>
                                     <Send size={18} />
                                 </button>
                             </div>
@@ -503,7 +622,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                 </section>
             </main>
 
-            {/* Create Channel Modal */}
             {showCreateModal && (
                 <div className="modal-overlay">
                     <div className="modal-content glass-morphism fade-in">
@@ -522,24 +640,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                                     autoFocus
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Add Members</label>
-                                <div className="members-selection-list">
-                                    {members.filter(m => m.id !== 1).map(member => (
-                                        <div
-                                            key={member.id}
-                                            className={`member-select-item ${selectedMembers.includes(member.id) ? 'selected' : ''}`}
-                                            onClick={() => toggleMemberSelection(member.id)}
-                                        >
-                                            <div className="member-avatar-mini" style={{ backgroundColor: member.color }}>{member.avatar}</div>
-                                            <span>{member.name}</span>
-                                            <div className="checkbox-custom">
-                                                {selectedMembers.includes(member.id) && <div className="checked-indicator"></div>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn-secondary" onClick={() => setShowCreateModal(false)}>Cancel</button>
                                 <button type="submit" className="btn-primary" disabled={!newChannelName.trim()}>Create Channel</button>
@@ -549,7 +649,6 @@ const Chat = ({ isDark, toggleTheme }) => {
                 </div>
             )}
 
-            {/* Start DM Modal */}
             {showDMModal && (
                 <div className="modal-overlay">
                     <div className="modal-content glass-morphism fade-in member-select-modal">
@@ -557,12 +656,8 @@ const Chat = ({ isDark, toggleTheme }) => {
                             <h3>Direct Message</h3>
                             <button className="close-modal" onClick={() => setShowDMModal(false)}><X size={20} /></button>
                         </div>
-                        <div className="search-members-box">
-                            <Search size={16} />
-                            <input type="text" placeholder="Search members..." />
-                        </div>
                         <div className="modal-scroll-list">
-                            {members.filter(m => m.id !== 1).map(member => (
+                            {members.filter(m => m.id !== currentUser?.id).map(member => (
                                 <div key={member.id} className="dm-select-item" onClick={() => handleStartDM(member)}>
                                     <div className="member-avatar" style={{ backgroundColor: member.color }}>{member.avatar}</div>
                                     <div className="dm-item-info">
