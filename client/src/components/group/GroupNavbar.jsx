@@ -8,7 +8,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
 
-const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
+const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme, currentUser }) => {
     const { id } = useParams();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -20,30 +20,50 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
         navigate('/');
     };
 
+    const [allMembers, setAllMembers] = useState([]);
+    const [onlineUsers, setOnlineUsers] = useState(new Set());
+    const [currentUserId, setCurrentUserId] = useState(null);
     const [members, setMembers] = useState([]);
+
+    useEffect(() => {
+        const fetchAllMembers = async () => {
+            if (!currentUser) return;
+            setCurrentUserId(currentUser.id);
+
+            const { data, error } = await supabase
+                .from('group_members')
+                .select('*')
+                .eq('group_id', id);
+
+            if (!error && data) {
+                setAllMembers(data);
+            }
+        };
+
+        if (id && currentUser) {
+            fetchAllMembers();
+        }
+    }, [id, currentUser]);
 
     useEffect(() => {
         let channel;
 
         const setupPresence = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            if (!currentUser) return;
 
-            // Check if current user is admin
             const { data: groupData } = await supabase
                 .from('collab_groups')
                 .select('created_by')
                 .eq('group_id', id)
                 .single();
 
-            const isCreator = groupData?.created_by === user.id;
-            const userName = localStorage.getItem('userName') || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+            const isCreator = groupData?.created_by === currentUser.id;
+            const userName = localStorage.getItem('userName') || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
 
-            // Setup Realtime Presence Channel
             channel = supabase.channel(`group_presence:${id}`, {
                 config: {
                     presence: {
-                        key: user.id,
+                        key: currentUser.id,
                     },
                 },
             });
@@ -51,38 +71,16 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
             channel
                 .on('presence', { event: 'sync' }, () => {
                     const presenceState = channel.presenceState();
-                    const activeMembers = [];
-
+                    const currentlyOnline = new Set();
                     for (const userId in presenceState) {
-                        const userPresences = presenceState[userId];
-                        if (userPresences.length > 0) {
-                            activeMembers.push(userPresences[0]);
-                        }
+                        currentlyOnline.add(userId);
                     }
-
-                    // Sort so current user is always top
-                    activeMembers.sort((a, b) => {
-                        if (a.id === user.id) return -1;
-                        if (b.id === user.id) return 1;
-                        // Admins next
-                        if (a.role === 'Admin' && b.role !== 'Admin') return -1;
-                        if (b.role === 'Admin' && a.role !== 'Admin') return 1;
-                        return 0;
-                    });
-
-                    // Update display names to include (You)
-                    const formattedMembers = activeMembers.map(m => ({
-                        id: m.id,
-                        name: m.id === user.id ? `${m.name} (You)` : m.name,
-                        role: m.role
-                    }));
-
-                    setMembers(formattedMembers);
+                    setOnlineUsers(currentlyOnline);
                 })
                 .subscribe(async (status) => {
                     if (status === 'SUBSCRIBED') {
                         await channel.track({
-                            id: user.id,
+                            id: currentUser.id,
                             name: userName,
                             role: isCreator ? 'Admin' : 'Member'
                         });
@@ -90,14 +88,36 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                 });
         };
 
-        setupPresence();
+        if (id && currentUser) {
+            setupPresence();
+        }
 
         return () => {
             if (channel) {
                 supabase.removeChannel(channel);
             }
         };
-    }, [id]);
+    }, [id, currentUser]);
+
+    // Combine allMembers with online status
+    useEffect(() => {
+        const formattedMembers = allMembers.map(m => ({
+            id: m.user_id,
+            name: m.user_name || 'Unknown User',
+            role: m.role,
+            isOnline: onlineUsers.has(m.user_id)
+        })).sort((a, b) => {
+            // Online first
+            if (a.isOnline && !b.isOnline) return -1;
+            if (!a.isOnline && b.isOnline) return 1;
+            // Admins next
+            if (a.role === 'Admin' && b.role !== 'Admin') return -1;
+            if (b.role === 'Admin' && a.role !== 'Admin') return 1;
+            return 0;
+        });
+
+        setMembers(formattedMembers);
+    }, [allMembers, onlineUsers]);
 
     return (
         <nav className="group-navbar">
@@ -125,9 +145,15 @@ const GroupNavbar = ({ groupName = "REACT PROJECT", isDark, toggleTheme }) => {
                             <div className="dropdown-header">Group Members</div>
                             {members.map(member => (
                                 <div key={member.id} className="member-item">
-                                    <div className="member-avatar">{member.name.charAt(0)}</div>
+                                    <div className="member-avatar-wrapper">
+                                        <div className="member-avatar">{member.name.charAt(0)}</div>
+                                        <div className={`status-indicator ${member.isOnline ? 'online' : 'offline'}`}></div>
+                                    </div>
                                     <div className="member-info">
-                                        <div className="member-name">{member.name}</div>
+                                        <div className="member-name">
+                                            {member.name} 
+                                            {member.id === currentUserId && ' (You)'}
+                                        </div>
                                         <div className="member-role">{member.role}</div>
                                     </div>
                                 </div>

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabase';
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, FilePlus, FileText, Loader2, Trash2, Download } from 'lucide-react';
 
-const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, refreshTrigger }) => {
+const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, refreshTrigger, currentUser }) => {
     const { id: groupId } = useParams();
     const fileInputRef = useRef(null);
     const [files, setFiles] = React.useState([]);
@@ -16,14 +16,18 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
     React.useEffect(() => {
         if (groupId) {
             fetchFiles();
-            checkAdminStatus();
         }
     }, [groupId, refreshTrigger]);
 
+    React.useEffect(() => {
+        if (groupId && currentUser) {
+            checkAdminStatus();
+        }
+    }, [groupId, currentUser]);
+
     const checkAdminStatus = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            if (!currentUser) return;
 
             const { data: groupData } = await supabase
                 .from('collab_groups')
@@ -31,7 +35,7 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
                 .eq('group_id', groupId)
                 .single();
 
-            if (groupData?.created_by === user.id) {
+            if (groupData?.created_by === currentUser.id) {
                 setIsAdmin(true);
             }
         } catch (error) {

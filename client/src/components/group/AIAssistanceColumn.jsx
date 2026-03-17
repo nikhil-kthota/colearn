@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../supabase';
 
-const AIAssistanceColumn = () => {
+const AIAssistanceColumn = ({ currentUser }) => {
     const { id: groupId } = useParams();
     const [message, setMessage] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,18 +31,19 @@ const AIAssistanceColumn = () => {
     const fileInputRef = useRef(null);
 
     React.useEffect(() => {
-        fetchModels();
+        if (currentUser) {
+            fetchModels();
+        }
         fetchGroupFiles();
-    }, [groupId]);
+    }, [groupId, currentUser]);
 
     const fetchModels = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!currentUser) return;
 
         const { data } = await supabase
             .from('user_ai_models')
             .select('name, key')
-            .eq('user_id', user.id);
+            .eq('user_id', currentUser.id);
 
         if (data && data.length > 0) {
             const customModels = data.map(m => m.name);

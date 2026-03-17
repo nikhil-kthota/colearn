@@ -21,8 +21,8 @@ const Login = () => {
 
             if (error) throw error;
             
-            // Store full name if available in user metadata
-            const fullName = data.user.user_metadata?.full_name || 'User';
+            // Store full name if available in user metadata, fallback to email prefix
+            const fullName = data.user.user_metadata?.full_name || data.user.email.split('@')[0];
             localStorage.setItem('userName', fullName);
             
             navigate("/");

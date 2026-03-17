@@ -13,6 +13,7 @@ const Group = ({ isDark, toggleTheme }) => {
     const [groupName, setGroupName] = useState('Loading...');
     const [selectedFile, setSelectedFile] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [currentUser, setCurrentUser] = useState(null);
 
     const handleFileDelete = () => {
         setSelectedFile(null);
@@ -20,6 +21,11 @@ const Group = ({ isDark, toggleTheme }) => {
     };
 
     React.useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setCurrentUser(user);
+        };
+
         const fetchGroup = async () => {
             const { data, error } = await supabase
                 .from('collab_groups')
@@ -27,8 +33,17 @@ const Group = ({ isDark, toggleTheme }) => {
                 .eq('group_id', id)
                 .single();
             
-            if (data) setGroupName(data.group_name);
+            if (data) {
+                setGroupName(data.group_name);
+                // Update last activity
+                await supabase
+                    .from('collab_groups')
+                    .update({ last_activity_at: new Date().toISOString() })
+                    .eq('group_id', id);
+            }
         };
+
+        fetchUserData();
         fetchGroup();
     }, [id]);
 
@@ -38,6 +53,7 @@ const Group = ({ isDark, toggleTheme }) => {
                 groupName={groupName}
                 isDark={isDark}
                 toggleTheme={toggleTheme}
+                currentUser={currentUser}
             />
 
             <main className={`group-main-container ${isFilesCollapsed ? 'files-collapsed' : ''}`}>
@@ -47,9 +63,10 @@ const Group = ({ isDark, toggleTheme }) => {
                     onFileSelect={setSelectedFile}
                     selectedFile={selectedFile}
                     refreshTrigger={refreshTrigger}
+                    currentUser={currentUser}
                 />
                 <FileViewerColumn selectedFile={selectedFile} onDelete={handleFileDelete} />
-                <AIAssistanceColumn />
+                <AIAssistanceColumn currentUser={currentUser} />
             </main>
         </div>
     );

@@ -51,15 +51,46 @@ const MyGroups = () => {
                 }
 
                 const mergedGroups = Array.from(allGroupsMap.values())
-                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    .sort((a, b) => {
+                        const dateA = new Date(a.last_activity_at || a.created_at);
+                        const dateB = new Date(b.last_activity_at || b.created_at);
+                        return dateB - dateA; // Most recently used first
+                    });
 
-                setGroups(mergedGroups.map(g => ({
-                    id: g.group_id,
-                    name: g.group_name,
-                    type: g.type,
-                    members: 1, // You could fetch group member counts here if wanted
-                    lastUsed: new Date(g.created_at).toLocaleDateString()
-                })));
+                // 3. Fetch member counts for each group
+                const groupsWithCounts = await Promise.all(mergedGroups.map(async (g) => {
+                    const { count } = await supabase
+                        .from('group_members')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('group_id', g.group_id);
+                    
+                    // Simple relative time formatter
+                    const getTimeAgo = (dateStr) => {
+                        if (!dateStr) return 'never';
+                        const now = new Date();
+                        const past = new Date(dateStr);
+                        const diffInMs = now - past;
+                        const diffInMins = Math.floor(diffInMs / (1000 * 60));
+                        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+                        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+                        if (diffInMins < 1) return 'just now';
+                        if (diffInMins < 60) return `${diffInMins}m ago`;
+                        if (diffInHours < 24) return `${diffInHours}h ago`;
+                        if (diffInDays < 7) return `${diffInDays}d ago`;
+                        return past.toLocaleDateString();
+                    };
+
+                    return {
+                        id: g.group_id,
+                        name: g.group_name,
+                        type: g.type,
+                        members: count || 0,
+                        lastUsed: getTimeAgo(g.last_activity_at || g.created_at)
+                    };
+                }));
+
+                setGroups(groupsWithCounts);
             } catch (err) {
                 console.error('Error fetching groups:', err);
             } finally {

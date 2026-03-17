@@ -40,9 +40,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             }
             
             // Add creator to group_members
+            const creatorName = localStorage.getItem('userName') || authUser.user_metadata?.full_name || 'Admin';
             await supabase.from('group_members').insert([{
                 group_id: groupId,
                 user_id: authUser.id,
+                user_name: creatorName,
                 role: 'Admin'
             }]);
 
@@ -77,9 +79,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
 
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
+                const joinerName = localStorage.getItem('userName') || authUser.user_metadata?.full_name || 'User';
                 const { error: joinError } = await supabase.from('group_members').insert([{
                     group_id: groupId,
                     user_id: authUser.id,
+                    user_name: joinerName,
                     role: 'Member'
                 }]);
                 if (joinError && joinError.code !== '23505') {
@@ -126,9 +130,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             }
 
             // Add creator to group_members
+            const creatorName = localStorage.getItem('userName') || authUser.user_metadata?.full_name || 'Admin';
             await supabase.from('group_members').insert([{
                 group_id: groupId,
                 user_id: authUser.id,
+                user_name: creatorName,
                 role: 'Admin'
             }]);
 
@@ -162,9 +168,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
 
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
+                const joinerName = localStorage.getItem('userName') || authUser.user_metadata?.full_name || 'User';
                 const { error: joinError } = await supabase.from('group_members').insert([{
                     group_id: groupId,
                     user_id: authUser.id,
+                    user_name: joinerName,
                     role: 'Member'
                 }]);
                 if (joinError && joinError.code !== '23505') {

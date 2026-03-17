@@ -105,6 +105,7 @@ const Profile = ({ isDark, toggleTheme }) => {
             if (error) throw error;
 
             setUser({ ...formData });
+            localStorage.setItem('userName', formData.name);
             setIsEditing(false);
             alert('Profile updated successfully!');
         } catch (err) {
