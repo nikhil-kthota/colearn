@@ -261,12 +261,12 @@ const FilesColumn = ({ isCollapsed, toggleCollapse, onFileSelect, selectedFile, 
             {!isCollapsed && (
                 <div className="column-content">
                     {loading ? (
-                        <div className="files-loading">
-                            <div className="loading-icon-wrapper">
-                                <Loader2 className="loading-spinner" size={40} />
+                        <div className="files-list-container">
+                            <div className="files-grid">
+                                {[1, 2, 3, 4, 5, 6].map(i => (
+                                    <div key={i} className="file-item-card skeleton" style={{ minHeight: '64px', opacity: 0.5 }}></div>
+                                ))}
                             </div>
-                            <h3>Loading Files</h3>
-                            <p>Fetching your group documents...</p>
                         </div>
                     ) : files.length > 0 ? (
                         <div className="files-list-container">

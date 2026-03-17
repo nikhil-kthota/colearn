@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '../supabase';
+import toast from 'react-hot-toast';
 import '../styles/Signup.css';
 
 const Signup = () => {
@@ -33,10 +34,10 @@ const Signup = () => {
 
             if (error) throw error;
 
-            alert('Signup successful! Please check your email for verification.');
+            toast.success('Signup successful! Check your email.');
             navigate('/login');
         } catch (error) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -67,7 +68,7 @@ const Signup = () => {
             if (error) throw error;
         } catch (error) {
             console.error("FATAL: Google Signup process failed:", error);
-            alert(`Signup Error: ${error.message}. Check browser console for details.`);
+            toast.error(`Signup Error: ${error.message}`);
         } finally {
             setLoading(false);
         }

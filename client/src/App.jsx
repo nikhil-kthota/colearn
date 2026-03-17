@@ -8,6 +8,7 @@ import UserHome from './pages/UserHome'
 import Profile from './pages/Profile'
 import Group from './pages/Group'
 import Chat from './pages/Chat'
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -62,6 +63,26 @@ function App() {
   return (
     <Router basename={basename}>
       <div className="app-wrapper">
+        <Toaster 
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: isDark ? '#101e33' : '#ffffff',
+              color: isDark ? '#ffffff' : '#101e33',
+              borderRadius: '1rem',
+              border: isDark ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(0,0,0,0.05)',
+              fontFamily: 'var(--font-display)',
+              fontWeight: '600',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#ffffff',
+              },
+            },
+          }}
+        />
         <Routes>
           {/* 
             DYNAMIC HOME: 

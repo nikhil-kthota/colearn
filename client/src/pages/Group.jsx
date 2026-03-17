@@ -5,6 +5,7 @@ import FilesColumn from '../components/group/FilesColumn';
 import FileViewerColumn from '../components/group/FileViewerColumn';
 import AIAssistanceColumn from '../components/group/AIAssistanceColumn';
 import { supabase } from '../supabase';
+import LoadingScreen from '../components/common/LoadingScreen';
 import '../styles/Group.css';
 
 const Group = ({ isDark, toggleTheme }) => {
@@ -14,6 +15,7 @@ const Group = ({ isDark, toggleTheme }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const handleFileDelete = () => {
         setSelectedFile(null);
@@ -43,9 +45,18 @@ const Group = ({ isDark, toggleTheme }) => {
             }
         };
 
-        fetchUserData();
-        fetchGroup();
+        const loadAll = async () => {
+            setLoading(true);
+            await Promise.all([fetchUserData(), fetchGroup()]);
+            setLoading(false);
+        };
+
+        loadAll();
     }, [id]);
+
+    if (loading) {
+        return <LoadingScreen message={`Entering ${groupName === 'Loading...' ? 'Group' : groupName}...`} />;
+    }
 
     return (
         <div className="group-layout">

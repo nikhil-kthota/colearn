@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LogIn, Code2, BookOpen, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabase';
+import toast from 'react-hot-toast';
 
 const COLLAB_CODING_URL = import.meta.env.VITE_COLLAB_CODING_URL || 'http://localhost:5174';
 
@@ -15,7 +16,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
         try {
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (!authUser) {
-                alert('You must be logged in to create a group.');
+                toast.error('You must be logged in to create a group.');
                 return;
             }
 
@@ -31,10 +32,10 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
 
             if (error) {
                 if (error.code === '23505') {
-                    alert('Group ID already exists. Please choose a unique ID.');
+                    toast.error('Group ID already exists. Please choose a unique ID.');
                 } else {
                     console.error('Supabase Error:', error);
-                    alert('Error creating group. Make sure the "collab_groups" table exists in your Supabase project.');
+                    toast.error('Error creating group. Make sure the "collab_groups" table exists in your Supabase project.');
                 }
                 return;
             }
@@ -48,10 +49,12 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 role: 'Admin'
             }]);
 
+            toast.success('Coding Space created!');
             const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}&creating=true`;
             window.open(url, '_blank');
         } catch (err) {
             console.error('Unexpected error:', err);
+            toast.error('Failed to create coding space.');
         } finally {
             setLoading(false);
         }
@@ -68,12 +71,12 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 .single();
 
             if (error || !data) {
-                alert('Group not found. Please check the Group ID.');
+                toast.error('Group not found. Please check the Group ID.');
                 return;
             }
 
             if (data.group_key !== groupKey) {
-                alert('Incorrect Group Key (PIN).');
+                toast.error('Incorrect Group Key (PIN).');
                 return;
             }
 
@@ -91,11 +94,13 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 }
             }
 
+            toast.success('Joined Coding Space!');
             const savedName = localStorage.getItem('userName') || 'User';
             const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&userName=${encodeURIComponent(savedName)}&creating=false`;
             window.open(url, '_blank');
         } catch (err) {
             console.error('Unexpected error:', err);
+            toast.error('Failed to join coding space.');
         } finally {
             setLoading(false);
         }
@@ -106,7 +111,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
         try {
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (!authUser) {
-                alert('You must be logged in to create a group.');
+                toast.error('You must be logged in to create a group.');
                 return;
             }
 
@@ -122,9 +127,10 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
 
             if (error) {
                 if (error.code === '23505') {
-                    alert('Group ID already exists. Please choose a unique ID.');
+                    toast.error('Group ID already exists. Please choose a unique ID.');
                 } else {
                     console.error('Supabase Error:', error);
+                    toast.error('Error creating group.');
                 }
                 return;
             }
@@ -138,9 +144,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 role: 'Admin'
             }]);
 
+            toast.success('Learning Path created!');
             navigate(`/group/${groupId}`);
         } catch (err) {
             console.error('Unexpected error:', err);
+            toast.error('Failed to create learning path.');
         } finally {
             setLoading(false);
         }
@@ -157,12 +165,12 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 .single();
 
             if (error || !data) {
-                alert('Group not found. Please check the Group ID.');
+                toast.error('Group not found. Please check the Group ID.');
                 return;
             }
 
             if (data.group_key !== groupKey) {
-                alert('Incorrect Group Key (PIN).');
+                toast.error('Incorrect Group Key (PIN).');
                 return;
             }
 
@@ -180,9 +188,11 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                 }
             }
 
+            toast.success('Joined Learning Path!');
             navigate(`/group/${groupId}`);
         } catch (err) {
             console.error('Unexpected error:', err);
+            toast.error('Failed to join learning path.');
         } finally {
             setLoading(false);
         }
@@ -301,7 +311,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                 {loading ? (
                                     <>
                                         <Loader2 className="animate-spin" size={18} />
-                                        Please Wait...
+                                        Creating...
                                     </>
                                 ) : (
                                     activeTab === 'coding' ? 'Initialize Workspace' : 'Create Learning Space'
@@ -375,7 +385,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
                                 {loading ? (
                                     <>
                                         <Loader2 className="animate-spin" size={18} />
-                                        Checking Group...
+                                        Authenticating...
                                     </>
                                 ) : (
                                     'Enter Group'

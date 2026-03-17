@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '../supabase';
+import toast from 'react-hot-toast';
 import '../styles/Signup.css';
 
 const Login = () => {
@@ -27,7 +28,7 @@ const Login = () => {
             
             navigate("/");
         } catch (error) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -58,7 +59,7 @@ const Login = () => {
             if (error) throw error;
         } catch (error) {
             console.error("FATAL: Google Login process failed:", error);
-            alert(`Login Error: ${error.message}. Check browser console for details.`);
+            toast.error(`Login Error: ${error.message}`);
         } finally {
             setLoading(false);
         }

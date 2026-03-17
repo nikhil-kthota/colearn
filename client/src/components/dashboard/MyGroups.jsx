@@ -127,7 +127,11 @@ const MyGroups = () => {
 
             <div className="groups-grid">
                 {loading ? (
-                    <div className="loading-state">Loading your groups...</div>
+                    <>
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="group-card skeleton" style={{ minHeight: '160px', opacity: 0.5 }}></div>
+                        ))}
+                    </>
                 ) : groups.length === 0 ? (
                     <div className="empty-state">No groups found. Create one to get started!</div>
                 ) : (
