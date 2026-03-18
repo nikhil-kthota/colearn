@@ -20,9 +20,12 @@ const AIAssistanceColumn = ({ currentUser }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
     const [isAddingModel, setIsAddingModel] = useState(false);
-    const [newModelData, setNewModelData] = useState({ name: '', key: '' });
-    const [selectedModel, setSelectedModel] = useState('Gemini 3 Flash');
-    const [models, setModels] = useState(['Gemini 3 Flash', 'GPT-4o', 'Claude 3.5 Sonnet']);
+    const [newModelData, setNewModelData] = useState({ name: '', key: '', provider: 'gemini' });
+    const [selectedModel, setSelectedModel] = useState('Gemini Flash 2.0');
+    const [models, setModels] = useState(['Gemini Flash 2.0', 'Groq', 'Mistral']);
+    const [chatHistory, setChatHistory] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [customModelInfo, setCustomModelInfo] = useState({}); // To store { key, provider } for custom models
     const [attachedImage, setAttachedImage] = useState(null);
     const [attachedFile, setAttachedFile] = useState(null);
     const [groupFiles, setGroupFiles] = useState([]);
@@ -46,8 +49,18 @@ const AIAssistanceColumn = ({ currentUser }) => {
             .eq('user_id', currentUser.id);
 
         if (data && data.length > 0) {
+            const info = {};
+            data.forEach(m => { 
+                info[m.name] = { 
+                    key: m.key, 
+                    provider: m.provider || (m.name.toLowerCase().includes('groq') ? 'groq' : m.name.toLowerCase().includes('mistral') ? 'mistral' : 'gemini')
+                }; 
+            });
+            setCustomModelInfo(info);
+            
             const customModels = data.map(m => m.name);
-            setModels(['Gemini 3 Flash', 'GPT-4o', 'Claude 3.5 Sonnet', ...customModels]);
+            const uniqueCustom = customModels.filter(m => !['Gemini Flash 2.0', 'Groq', 'Mistral'].includes(m));
+            setModels(['Gemini Flash 2.0', 'Groq', 'Mistral', ...uniqueCustom]);
         }
     };
 
@@ -60,15 +73,82 @@ const AIAssistanceColumn = ({ currentUser }) => {
         if (data) setGroupFiles(data);
     };
 
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         if (e) e.preventDefault();
-        if (message.trim() || attachedImage || attachedFile) {
-            console.log(`Sending to ${selectedModel}:`, { text: message, image: !!attachedImage, file: attachedFile?.name });
-            setMessage('');
+        if (!message.trim() && !attachedImage && !attachedFile) return;
+
+        const userMsg = { role: 'user', content: message };
+        setChatHistory(prev => [...prev, userMsg]);
+        const currentMsg = message;
+        setMessage('');
+        setIsLoading(true);
+        setIsMenuOpen(false);
+        setIsModelMenuOpen(false);
+
+        try {
+            // Determine model name for the edge function
+            let functionModel = 'gemini';
+            let apiKey = null;
+
+            if (['Gemini Flash 2.0', 'Groq', 'Mistral'].includes(selectedModel)) {
+                if (selectedModel === 'Groq') functionModel = 'groq';
+                else if (selectedModel === 'Mistral') functionModel = 'mistral';
+                // Gemini is default 'gemini'
+            } else {
+                // Custom model
+                const info = customModelInfo[selectedModel];
+                functionModel = info?.provider || 'gemini';
+                apiKey = info?.key;
+            }
+
+            const { data, error } = await supabase.functions.invoke('ai-assistant', {
+                body: {
+                    groupId,
+                    query: currentMsg,
+                    model: functionModel,
+                    apiKey: apiKey // Only sent if custom model
+                }
+            });
+
+            if (error) {
+                let errorMsg = "AI Assistant Error";
+                
+                // Detailed parsing for Supabase FunctionsHttpError
+                if (error.context) {
+                    try {
+                        const response = error.context;
+                        if (response.headers.get('content-type')?.includes('application/json')) {
+                            const body = await response.json();
+                            errorMsg = body.error || body.message || error.message;
+                        } else {
+                            const text = await response.text();
+                            errorMsg = text || error.message;
+                        }
+                    } catch (e) {
+                        errorMsg = error.message;
+                    }
+                } else {
+                    errorMsg = error.message;
+                }
+
+                if (error.status === 401) {
+                    errorMsg = `Unauthorized: ${errorMsg}. Please ensure GEMINI_API_KEY and GROQ_API_KEY are set in your Supabase Dashboard Secrets.`;
+                }
+                
+                throw new Error(errorMsg);
+            }
+
+            setChatHistory(prev => [...prev, { role: 'ai', content: data.response }]);
+        } catch (err) {
+            console.error('AI Error:', err);
+            setChatHistory(prev => [...prev, { 
+                role: 'ai', 
+                content: `Error: ${err.message || 'Failed to get response.'}` 
+            }]);
+        } finally {
+            setIsLoading(false);
             setAttachedImage(null);
             setAttachedFile(null);
-            setIsMenuOpen(false);
-            setIsModelMenuOpen(false);
         }
     };
 
@@ -119,7 +199,8 @@ const AIAssistanceColumn = ({ currentUser }) => {
                 .insert([{
                     user_id: user.id,
                     name: newModelData.name,
-                    key: newModelData.key
+                    key: newModelData.key,
+                    provider: newModelData.provider
                 }]);
 
             if (error) {
@@ -128,9 +209,13 @@ const AIAssistanceColumn = ({ currentUser }) => {
             }
 
             setModels(prev => [...prev, newModelData.name]);
+            setCustomModelInfo(prev => ({
+                ...prev,
+                [newModelData.name]: { key: newModelData.key, provider: newModelData.provider }
+            }));
             setSelectedModel(newModelData.name);
             setIsAddingModel(false);
-            setNewModelData({ name: '', key: '' });
+            setNewModelData({ name: '', key: '', provider: 'gemini' });
             setIsModelMenuOpen(false);
         }
     };
@@ -142,8 +227,28 @@ const AIAssistanceColumn = ({ currentUser }) => {
             </div>
             <div className="column-content">
                 <div className="ai-chat-container">
-                    <div className="ai-welcome-msg">
-                        Hello! I'm your AI assistant. I can help you understand the code, debug issues, or suggest improvements.
+                    <div className="ai-messages-list">
+                        {chatHistory.length === 0 ? (
+                            <div className="ai-welcome-msg">
+                                Hello! I'm your AI assistant. I can help you understand the code, debug issues, or suggest improvements.
+                            </div>
+                        ) : (
+                            chatHistory.map((chat, idx) => (
+                                <div key={idx} className={`ai-message ${chat.role}`}>
+                                    <div className="ai-message-bubble">
+                                        {chat.content}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        {isLoading && (
+                            <div className="ai-message ai">
+                                <div className="ai-message-bubble loading">
+                                    <Loader2 className="loading-spinner" size={16} />
+                                    Thinking...
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <form className="ai-input-form" onSubmit={handleSendMessage}>
@@ -302,6 +407,19 @@ const AIAssistanceColumn = ({ currentUser }) => {
                                                             />
                                                         </div>
                                                         <div className="model-input-group">
+                                                            <label>Provider</label>
+                                                            <select
+                                                                className="model-field-input"
+                                                                value={newModelData.provider}
+                                                                onChange={e => setNewModelData({ ...newModelData, provider: e.target.value })}
+                                                                style={{ background: 'var(--surface-glass)', color: 'inherit', border: '1px solid var(--border-subtle)' }}
+                                                            >
+                                                                <option value="gemini">Gemini</option>
+                                                                <option value="groq">Groq</option>
+                                                                <option value="mistral">Mistral</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="model-input-group">
                                                             <label>API Key</label>
                                                             <input
                                                                 type="password"
@@ -326,8 +444,8 @@ const AIAssistanceColumn = ({ currentUser }) => {
                                 </div>
 
                                 <div className="toolbar-right">
-                                    <button type="submit" className="ai-send-circle" disabled={!message.trim() && !attachedImage && !attachedFile}>
-                                        <Send size={16} />
+                                    <button type="submit" className="ai-send-circle" disabled={(!message.trim() && !attachedImage && !attachedFile) || isLoading}>
+                                        {isLoading ? <Loader2 size={16} className="loading-spinner" /> : <Send size={16} />}
                                     </button>
                                 </div>
                             </div>
