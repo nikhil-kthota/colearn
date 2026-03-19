@@ -35,25 +35,33 @@ async function extractText(
     return text.slice(0, 12000);
   }
 
-  // PDF
+  // PDF - Improved regex-based extraction
   if (ext === "pdf") {
     try {
       const res = await safeFetch(url);
       const buffer = await res.arrayBuffer();
       const bytes = new Uint8Array(buffer);
+      // PDF can be binary, but text is usually in ASCII strings
       const raw = new TextDecoder("latin1").decode(bytes);
-      // Basic PDF text extraction
-      const matches = [...raw.matchAll(/BT\s*([\s\S]*?)\s*ET/g)];
+
+      // Look for all text strings inside parentheses: (text)
+      const matches = [...raw.matchAll(/\((.*?)\)/g)];
       const texts: string[] = [];
+
       for (const match of matches) {
-        const block = match[1];
-        const strMatches = [...block.matchAll(/\((.*?)\)/g)];
-        for (const s of strMatches) {
-          const cleaned = s[1].replace(/\\n/g, "\n").replace(/\\/g, "");
-          if (cleaned.trim()) texts.push(cleaned);
+        const cleaned = match[1]
+          .replace(/\\n/g, "\n")
+          .replace(/\\/g, "")
+          .trim();
+
+        // Simple heuristic: skip short binary/encoded blocks (likely not text)
+        if (cleaned.length > 2 && /^[a-zA-Z0-9\s.,!?;:()\@\-\/]+$/.test(cleaned)) {
+          texts.push(cleaned);
         }
       }
-      return texts.join(" ").slice(0, 12000) || `[PDF file: ${fileName} — no readable text extracted]`;
+
+      const combined = texts.join(" ").slice(0, 12000);
+      return combined || `[PDF file: ${fileName} — no readable text extracted. Please try a .txt or .docx if this continues.]`;
     } catch (e) {
       return `[PDF file: ${fileName} — Error during extraction: ${e instanceof Error ? e.message : String(e)}]`;
     }
@@ -97,25 +105,6 @@ async function extractText(
   }
 
   return `[Image file: ${fileName}]`;
-}
-
-// ─── AI API Callers ──────────────────────────────────────────────────────────
-
-async function callGemini(apiKey: string, prompt: string): Promise<string> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 2048 },
-      }),
-    },
-  );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message ?? "Gemini API error");
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response.";
 }
 
 async function callGroq(apiKey: string, prompt: string): Promise<string> {
@@ -173,11 +162,10 @@ Deno.serve(async (req) => {
 
     // Determine which API key to use
     let activeApiKey = apiKey;
-    
+
     // Default keys from environment variables if not provided by user
     if (!activeApiKey) {
-      if (model === "gemini") activeApiKey = Deno.env.get("GEMINI_API_KEY");
-      else if (model === "groq") activeApiKey = Deno.env.get("GROQ_API_KEY");
+      if (model === "groq") activeApiKey = Deno.env.get("GROQ_API_KEY");
       else if (model === "mistral") activeApiKey = Deno.env.get("MISTRAL_API_KEY");
     }
 
@@ -237,9 +225,7 @@ No files have been uploaded to this group yet. Answer based on your general know
 
     // 4. Call AI
     let response: string;
-    if (model === "gemini") {
-      response = await callGemini(activeApiKey, fullPrompt);
-    } else if (model === "groq") {
+    if (model === "groq") {
       response = await callGroq(activeApiKey, fullPrompt);
     } else if (model === "mistral") {
       response = await callMistral(activeApiKey, fullPrompt);

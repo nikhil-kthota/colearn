@@ -21,8 +21,8 @@ const AIAssistanceColumn = ({ currentUser }) => {
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
     const [isAddingModel, setIsAddingModel] = useState(false);
     const [newModelData, setNewModelData] = useState({ name: '', key: '', provider: 'gemini' });
-    const [selectedModel, setSelectedModel] = useState('Gemini Flash 2.0');
-    const [models, setModels] = useState(['Gemini Flash 2.0', 'Groq', 'Mistral']);
+    const [selectedModel, setSelectedModel] = useState('Groq');
+    const [models, setModels] = useState(['Groq', 'Mistral']);
     const [chatHistory, setChatHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [customModelInfo, setCustomModelInfo] = useState({}); // To store { key, provider } for custom models
@@ -59,8 +59,8 @@ const AIAssistanceColumn = ({ currentUser }) => {
             setCustomModelInfo(info);
             
             const customModels = data.map(m => m.name);
-            const uniqueCustom = customModels.filter(m => !['Gemini Flash 2.0', 'Groq', 'Mistral'].includes(m));
-            setModels(['Gemini Flash 2.0', 'Groq', 'Mistral', ...uniqueCustom]);
+            const uniqueCustom = customModels.filter(m => !['Groq', 'Mistral'].includes(m));
+            setModels(['Groq', 'Mistral', ...uniqueCustom]);
         }
     };
 
@@ -90,10 +90,9 @@ const AIAssistanceColumn = ({ currentUser }) => {
             let functionModel = 'gemini';
             let apiKey = null;
 
-            if (['Gemini Flash 2.0', 'Groq', 'Mistral'].includes(selectedModel)) {
+            if (['Groq', 'Mistral'].includes(selectedModel)) {
                 if (selectedModel === 'Groq') functionModel = 'groq';
                 else if (selectedModel === 'Mistral') functionModel = 'mistral';
-                // Gemini is default 'gemini'
             } else {
                 // Custom model
                 const info = customModelInfo[selectedModel];
@@ -132,9 +131,16 @@ const AIAssistanceColumn = ({ currentUser }) => {
                 }
 
                 if (error.status === 401) {
-                    errorMsg = `Unauthorized: ${errorMsg}. Please ensure GEMINI_API_KEY and GROQ_API_KEY are set in your Supabase Dashboard Secrets.`;
+                    errorMsg = `Unauthorized: ${errorMsg}. Please check your API keys in Supabase dashboard.`;
                 }
                 
+                // Summarize common errors for better UX
+                if (errorMsg.toLowerCase().includes("quota exceeded") || errorMsg.toLowerCase().includes("rate limit")) {
+                    errorMsg = "The AI model is currently busy or has reached its free limit. Please switch to another model or wait a minute before trying again.";
+                } else if (errorMsg.includes("Invalid JWT")) {
+                    errorMsg = "Your session has expired. Please refresh the page or log in again.";
+                }
+
                 throw new Error(errorMsg);
             }
 
@@ -414,7 +420,8 @@ const AIAssistanceColumn = ({ currentUser }) => {
                                                                 onChange={e => setNewModelData({ ...newModelData, provider: e.target.value })}
                                                                 style={{ background: 'var(--surface-glass)', color: 'inherit', border: '1px solid var(--border-subtle)' }}
                                                             >
-                                                                <option value="gemini">Gemini</option>
+                                                                <option value="gemini">Gemini (Native)</option>
+                                                                <option value="openrouter">OpenRouter (Gemini/Llama/Free)</option>
                                                                 <option value="groq">Groq</option>
                                                                 <option value="mistral">Mistral</option>
                                                             </select>
