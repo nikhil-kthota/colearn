@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/Home.css';
 
-import { Box, Terminal } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 const Home = () => {
     return (
@@ -19,7 +19,7 @@ const Home = () => {
             <div className="hero-side-box">
                 <div className="side-box-content">
                     <div className="side-box-icon">
-                        <Box size={40} className="floating-icon" />
+                        <Users size={40} className="floating-icon" />
                     </div>
                     <h3 className="side-box-title">
                         Empowering <br /> Collective Minds.
