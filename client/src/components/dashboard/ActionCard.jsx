@@ -50,7 +50,7 @@ const ActionCard = ({ activeTab, actionType, setActionType, setIsPaused, formDat
             }]);
 
             toast.success('Coding Space created!');
-            const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&groupName=${encodeURIComponent(groupName)}&creating=true`;
+            const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(groupId)}&userName=${encodeURIComponent(creatorName)}&creating=true`;
             window.open(url, '_blank');
         } catch (err) {
             console.error('Unexpected error:', err);

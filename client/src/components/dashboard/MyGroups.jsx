@@ -103,8 +103,16 @@ const MyGroups = () => {
 
     const displayedGroups = showAll ? groups : groups.slice(0, 4);
 
+    const COLLAB_CODING_URL = import.meta.env.VITE_COLLAB_CODING_URL || 'http://localhost:5174';
+
     const handleGroupClick = (group) => {
-        navigate(`/group/${group.id}`);
+        if (group.type === 'coding') {
+            const userName = localStorage.getItem('userName') || 'User';
+            const url = `${COLLAB_CODING_URL}?groupId=${encodeURIComponent(group.id)}&userName=${encodeURIComponent(userName)}&creating=false`;
+            window.open(url, '_blank');
+        } else {
+            navigate(`/group/${group.id}`);
+        }
     };
 
     return (
