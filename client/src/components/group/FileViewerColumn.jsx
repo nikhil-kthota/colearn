@@ -85,12 +85,54 @@ const FileViewerColumn = ({ selectedFile, onDelete }) => {
                     )}
                 </div>
             );
+        } else if (
+            type.startsWith('text/') || 
+            selectedFile.file_name.toLowerCase().match(/\.(txt|py|java|c|cpp|h|js|jsx|ts|tsx|css|html|json|md|sql|php|sh|yml|yaml|xml|class)$/)
+        ) {
+            return <CodePreview url={publicUrl} />;
         }
 
         // Fallback large icon based on type
         return (
             <div className="preview-icon-large">
                 <FileText size={64} strokeWidth={1} />
+            </div>
+        );
+    };
+
+    const CodePreview = ({ url }) => {
+        const [content, setContent] = React.useState('');
+        const [loading, setLoading] = React.useState(true);
+
+        React.useEffect(() => {
+            if (!url) return;
+            fetch(url)
+                .then(res => res.text())
+                .then(text => {
+                    setContent(text);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error('Error fetching file content:', err);
+                    setContent('Could not load file content.');
+                    setLoading(false);
+                });
+        }, [url]);
+
+        if (loading) {
+            return (
+                <div className="preview-loading">
+                    <Loader2 className="animate-spin" size={32} />
+                    <span>Loading content...</span>
+                </div>
+            );
+        }
+
+        return (
+            <div className="preview-media-container text-container">
+                <pre className="preview-code-block">
+                    {content}
+                </pre>
             </div>
         );
     };
