@@ -107,7 +107,7 @@
 
 .theme-toggle:hover {
     background-color: rgba(16, 185, 129, 0.1);
-    color: var(--color-neon-blue);
+    color: var(--color-neon-blue) !important;
 }
 
 .btn-login {
@@ -124,7 +124,7 @@
 
 .btn-login:hover {
     background-color: var(--color-white);
-    color: var(--color-deep-blue);
+    color: var(--color-deep-blue) !important;
 }
 
 .btn-signup {
@@ -149,6 +149,10 @@
 [data-theme='light'] .navbar .btn-signup,
 [data-theme='light'] .navbar .mobile-menu-toggle {
     color: #ffffff !important;
+}
+
+[data-theme='light'] .navbar .btn-login:hover {
+    color: var(--color-deep-blue) !important;
 }
 
 .mobile-center-controls,

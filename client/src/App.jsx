@@ -8,7 +8,7 @@ import UserHome from './pages/UserHome'
 import Profile from './pages/Profile'
 import Group from './pages/Group'
 import Chat from './pages/Chat'
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 function App() {
   const [isDark, setIsDark] = useState(true);
@@ -30,7 +30,13 @@ function App() {
     });
 
     // 2. Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      // 1. Show toast on logout
+      if (event === 'SIGNED_OUT') {
+        toast.success('Logged out successfully!');
+        localStorage.removeItem('userName');
+      }
+      
       setSession(currentSession);
       if (currentSession?.user?.user_metadata?.full_name) {
         localStorage.setItem('userName', currentSession.user.user_metadata.full_name);
@@ -46,7 +52,7 @@ function App() {
   // Protected Route: Only accessible when logged in
   const ProtectedRoute = ({ children }) => {
     if (loading) return null;
-    if (!session) return <Navigate to="/login" replace />;
+    if (!session) return <Navigate to="/" replace />;
     return children;
   };
 

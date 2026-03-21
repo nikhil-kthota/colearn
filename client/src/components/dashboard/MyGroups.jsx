@@ -81,12 +81,15 @@ const MyGroups = () => {
                         return past.toLocaleDateString();
                     };
 
+                    const actionWord = g.created_by === user.id ? 'Created' : 'Joined';
+
                     return {
                         id: g.group_id,
                         name: g.group_name,
                         type: g.type,
                         members: count || 0,
-                        lastUsed: getTimeAgo(g.last_activity_at || g.created_at)
+                        action: actionWord,
+                        lastUsed: getTimeAgo(g.created_at)
                     };
                 }));
 
@@ -158,7 +161,7 @@ const MyGroups = () => {
                                 <h3 className="group-name">{group.name}</h3>
                                 <div className="group-details">
                                     <span className="meta-item">{group.members} members</span>
-                                    <span className="meta-item">Used {group.lastUsed}</span>
+                                    <span className="meta-item">{group.action} {group.lastUsed}</span>
                                 </div>
                             </div>
                         </div>

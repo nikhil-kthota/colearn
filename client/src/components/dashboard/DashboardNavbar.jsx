@@ -14,7 +14,26 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+    const [user, setUser] = useState({ name: 'User', initials: 'U' });
     const navigate = useNavigate();
+
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        const parts = name.trim().split(' ');
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+
+    React.useEffect(() => {
+        const fetchUser = async () => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                const name = authUser.user_metadata?.full_name || authUser.email.split('@')[0];
+                setUser({ name, initials: getInitials(name) });
+            }
+        };
+        fetchUser();
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -89,7 +108,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                             onMouseLeave={() => setIsProfileOpen(false)}
                         >
                             <div className="user-avatar-circle" onClick={() => navigate('/profile')}>
-                                JD
+                                {user.initials}
                             </div>
 
                             {isProfileOpen && (
@@ -128,7 +147,7 @@ const DashboardNavbar = ({ isDark, toggleTheme }) => {
                             className="mobile-user-toggle"
                             onClick={toggleMobileProfile}
                         >
-                            <div className="user-avatar-circle mini">JD</div>
+                             <div className="user-avatar-circle mini">{user.initials}</div>
                         </button>
 
                         {isMobileProfileOpen && (
