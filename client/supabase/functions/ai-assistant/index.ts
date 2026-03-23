@@ -212,7 +212,8 @@ Deno.serve(async (req) => {
     const systemContext = fileContexts.length > 0
       ? `You are a helpful AI assistant for a collaborative learning group. 
 The group has uploaded the following files. Use them as context to answer the user's question.
-If the question can be answered from the files, do so with specific references.
+If the question can be answered from the files, do so with specific references but also explain about them.
+Consider the page numbers in a numbered document from the footer.
 If not, answer based on general knowledge.
 
 === GROUP FILES ===

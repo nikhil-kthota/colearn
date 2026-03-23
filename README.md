@@ -1,61 +1,66 @@
-# CoLearn - Real-Time Collaborative Learning Platform 🚀
+# CoLearn - Collaborative Learning Platform
 
-[**View Live Demo**](https://nikhil-kthota.github.io/collaborative-learning)
+[View Live Demo](https://nikhil-kthota.github.io/collaborative-learning)
 
-CoLearn is a premium, high-performance collaborative learning solution designed to enhance real-time student collaboration. It solves the fragmentation of teamwork by integrating communication, file sharing, AI assistance, and coding into a single, cohesive workspace.
+CoLearn was built as a central space for students to study together more effectively. It brings real-time chat, file sharing, and AI study tools into one workspace so teams can focus on learning without having to jump between different apps.
 
-## ✨ Key Features
+## Features
 
-### 🏢 AI Workspace & Real-Time Chat
-*   **Intelligent AI Assistance**: Integrated chat with support for **pasting images** and uploading external files.
-*   **Rich Messaging**: Full support for **WhatsApp-style emojis** and persistent chat history.
-*   **Collaboration Tools**: Real-time member tracking and mini-file list for quick resource access.
+### Shared Workspace
+The workspace is where the actual collaboration happens. It has a real-time chat that supports image pasting and file uploads, along with a way to keep track of active members and access files shared in the session.
 
-### 📊 Modern User Dashboard
-*   **Personalized Experience**: High-end landing with spacious, glassmorphic design and intuitive navigation.
-*   **Dynamic Group Management**: "My Groups" section that smartly displays the most recent 4 groups.
-*   **Smooth Transitions**: Premium expand/collapse functionality for viewing all groups with a single click.
-*   **Action Tabs**: Quick access to start new coding or learning sessions.
+### User Dashboard
+The dashboard gives you a quick look at your active groups and recent activity. It’s designed to be simple to navigate, making it easy to hop back into a study session or start a new one.
 
-### 👤 Advanced User Profile
-*   **AI Model Management**: Custom interface to **Add, Edit, and Delete** AI models (Gemini, GPT-4o, etc.) with secure API key storage.
-*   **Privacy First**: Secure password visibility toggles and API key masking.
-*   **Optimized List**: Scrollable models list (max 2 visible) with a custom neon-themed scrollbar.
-*   **Account Controls**: Integrated profile editing and secure account deletion confirmation.
+### AI Settings
+You can customize which AI models you use in your workspace, such as Groq and Mistral AI. The profile settings let you securely manage your API keys and choose the best tools for your study needs.
 
-### 🎨 Premium UI/UX & Aesthetics
-*   **Dynamic Theming**: Seamless switching between **Deep Blue Dark Mode** and **Clean Light Mode** across all pages.
-*   **Fluid Animations**: Industry-standard `cubic-bezier` transitions and fade-in effects for a luxury feel.
-*   **Responsive Excellence**: Fully optimized for Desktop, Tablet, and Mobile with a persistent, high-contrast navbar.
-*   **Modern Typography**: Utilizes `Quicksand` for displays and `Comfortaa` for body text.
+### Design
+The platform works across different devices and includes both dark and light modes. The interface is kept clean with smooth transitions to help keep the focus on the work.
 
-## 🛠️ Tech Stack
+## Infrastructure and Backend
 
-*   **Frontend**: React (Vite)
-*   **Icons**: Lucide-React
-*   **Styling**: Vanilla CSS (Custom Design System)
-*   **Deployment**: GitHub Pages (gh-pages)
-*   **State Management**: React Hooks (useState, useEffect)
+CoLearn uses a distributed architecture to handle real-time collaboration and secure data management across different services.
 
-## 🚀 Getting Started
+### Supabase Integration
+The core application state and user data are managed through the Supabase ecosystem.
+*   **Database and Auth**: PostgreSQL handles the primary data storage for profiles, groups, and session history, while Supabase Auth handles secure user registration and login.
+*   **Edge Functions**: We utilize Supabase Edge Functions for server-side processing, specifically for the AI assistant. These functions securely handle API requests to AI providers like Groq and Mistral, keeping sensitive keys off the client side.
+*   **Real-time and Storage**: User presence and chat updates are managed via Supabase’s real-time engine. Shared files and images uploaded during sessions are hosted securely on Supabase Storage.
 
-1.  **Clone the repository**:
+### Collaborative Coding Server
+The real-time code editor is supported by a dedicated Node.js backend deployed on Render.
+*   **Socket.io & Synchronization**: A WebSocket-based architecture ensures that code changes and cursor movements are synced instantly. The server uses Operational Transformation (OT) to resolve conflicts when multiple users edit the same line of code.
+*   **Execution Environment**: The backend provides a sandboxed environment to execute code in various languages, returning output directly to the participants in the session.
+
+## Tech Stack
+
+*   Frontend: React (Vite)
+*   Primary Backend: Supabase (Auth, DB, Edge Functions, Storage)
+*   Collaboration Server: Node.js (Socket.io, Express)
+*   Icons: Lucide React
+*   Styling: Custom CSS
+*   Deployment: GitHub Pages (Frontend) and Render (Backend)
+
+## Getting Started
+
+1.  Clone the repository:
     ```bash
     git clone https://github.com/nikhil-kthota/collaborative-learning.git
     ```
-2.  **Install dependencies**:
+2.  Install dependencies:
     ```bash
     cd collab-learning/client
     npm install
     ```
-3.  **Run locally**:
+3.  Run locally:
     ```bash
     npm run dev
     ```
-4.  **Build for production**:
+4.  Build for production:
     ```bash
     npm run build
     ```
 
 ---
-*Built with ❤️ for better collaborated learning.*
+Created for better collaborative learning.
