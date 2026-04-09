@@ -21,25 +21,37 @@ function App() {
 
   useEffect(() => {
     // 1. Initial session check
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      setSession(initialSession);
-      if (initialSession?.user?.user_metadata?.full_name) {
-        localStorage.setItem('userName', initialSession.user.user_metadata.full_name);
+    const checkSession = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (initialSession) {
+          setSession(initialSession);
+          if (initialSession.user?.user_metadata?.full_name) {
+            localStorage.setItem('userName', initialSession.user.user_metadata.full_name);
+          }
+        }
+      } catch (err) {
+        console.error("Session check error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    checkSession();
 
     // 2. Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      // 1. Show toast on logout
+      console.log("Auth Event:", event);
+      
       if (event === 'SIGNED_OUT') {
         toast.success('Logged out successfully!');
         localStorage.removeItem('userName');
-      }
-      
-      setSession(currentSession);
-      if (currentSession?.user?.user_metadata?.full_name) {
-        localStorage.setItem('userName', currentSession.user.user_metadata.full_name);
+        setSession(null);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || currentSession) {
+        setSession(currentSession);
+        if (currentSession?.user?.user_metadata?.full_name) {
+          localStorage.setItem('userName', currentSession.user.user_metadata.full_name);
+        }
       }
       setLoading(false);
     });
