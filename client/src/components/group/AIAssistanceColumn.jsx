@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
     X, 
@@ -240,7 +241,15 @@ const AIAssistanceColumn = ({ currentUser }) => {
                             chatHistory.map((chat, idx) => (
                                 <div key={idx} className={`ai-message ${chat.role}`}>
                                     <div className="ai-message-bubble">
-                                        {chat.content}
+                                        {chat.role === 'ai' ? (
+                                            <div className="ai-markdown">
+                                                <ReactMarkdown>
+                                                    {chat.content}
+                                                </ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            chat.content
+                                        )}
                                     </div>
                                 </div>
                             ))
