@@ -20,7 +20,7 @@ const AIAssistanceColumn = ({ currentUser }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
     const [isAddingModel, setIsAddingModel] = useState(false);
-    const [newModelData, setNewModelData] = useState({ name: '', key: '', provider: 'gemini' });
+    const [newModelData, setNewModelData] = useState({ name: '', key: '' });
     const [selectedModel, setSelectedModel] = useState('Groq');
     const [models, setModels] = useState(['Groq', 'Mistral']);
     const [chatHistory, setChatHistory] = useState([]);
@@ -52,8 +52,7 @@ const AIAssistanceColumn = ({ currentUser }) => {
             const info = {};
             data.forEach(m => { 
                 info[m.name] = { 
-                    key: m.key, 
-                    provider: m.provider || (m.name.toLowerCase().includes('groq') ? 'groq' : m.name.toLowerCase().includes('mistral') ? 'mistral' : 'gemini')
+                    key: m.key
                 }; 
             });
             setCustomModelInfo(info);
@@ -96,7 +95,7 @@ const AIAssistanceColumn = ({ currentUser }) => {
             } else {
                 // Custom model
                 const info = customModelInfo[selectedModel];
-                functionModel = info?.provider || 'gemini';
+                functionModel = 'gemini'; // Defaulting to gemini for all custom models
                 apiKey = info?.key;
             }
 
@@ -205,8 +204,7 @@ const AIAssistanceColumn = ({ currentUser }) => {
                 .insert([{
                     user_id: user.id,
                     name: newModelData.name,
-                    key: newModelData.key,
-                    provider: newModelData.provider
+                    key: newModelData.key
                 }]);
 
             if (error) {
@@ -217,11 +215,11 @@ const AIAssistanceColumn = ({ currentUser }) => {
             setModels(prev => [...prev, newModelData.name]);
             setCustomModelInfo(prev => ({
                 ...prev,
-                [newModelData.name]: { key: newModelData.key, provider: newModelData.provider }
+                [newModelData.name]: { key: newModelData.key }
             }));
             setSelectedModel(newModelData.name);
             setIsAddingModel(false);
-            setNewModelData({ name: '', key: '', provider: 'gemini' });
+            setNewModelData({ name: '', key: '' });
             setIsModelMenuOpen(false);
         }
     };
@@ -411,20 +409,6 @@ const AIAssistanceColumn = ({ currentUser }) => {
                                                                 value={newModelData.name}
                                                                 onChange={e => setNewModelData({ ...newModelData, name: e.target.value })}
                                                             />
-                                                        </div>
-                                                        <div className="model-input-group">
-                                                            <label>Provider</label>
-                                                            <select
-                                                                className="model-field-input"
-                                                                value={newModelData.provider}
-                                                                onChange={e => setNewModelData({ ...newModelData, provider: e.target.value })}
-                                                                style={{ background: 'var(--surface-glass)', color: 'inherit', border: '1px solid var(--border-subtle)' }}
-                                                            >
-                                                                <option value="gemini">Gemini (Native)</option>
-                                                                <option value="openrouter">OpenRouter (Gemini/Llama/Free)</option>
-                                                                <option value="groq">Groq</option>
-                                                                <option value="mistral">Mistral</option>
-                                                            </select>
                                                         </div>
                                                         <div className="model-input-group">
                                                             <label>API Key</label>
