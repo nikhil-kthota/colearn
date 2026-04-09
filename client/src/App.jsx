@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabase'
 import LandingPage from './pages/LandingPage'
 import Signup from './pages/Signup'
@@ -80,7 +80,7 @@ function App() {
   const basename = import.meta.env.BASE_URL;
 
   return (
-    <Router>
+    <Router basename={basename}>
       <div className="app-wrapper">
         <Toaster 
           position="top-center"
