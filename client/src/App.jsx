@@ -20,8 +20,9 @@ function App() {
   }, [isDark]);
 
   useEffect(() => {
-    // 1. Initial session check
-    const checkSession = async () => {
+    // 1. Initial robust session check
+    const initAuth = async () => {
+      setLoading(true);
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         if (initialSession) {
@@ -31,22 +32,22 @@ function App() {
           }
         }
       } catch (err) {
-        console.error("Session check error:", err);
+        console.error("Auth init error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    initAuth();
 
-    // 2. Auth state listener
+    // 2. Auth state listener for real-time updates
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log("Auth Event:", event);
+      console.log("Supabase Auth Event:", event);
       
       if (event === 'SIGNED_OUT') {
-        toast.success('Logged out successfully!');
         localStorage.removeItem('userName');
         setSession(null);
+        toast.success('Logged out successfully!');
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || currentSession) {
         setSession(currentSession);
         if (currentSession?.user?.user_metadata?.full_name) {
@@ -68,7 +69,7 @@ function App() {
     return children;
   };
 
-  // Public Route: Only accessible when NOT logged in (Login/Signup)
+  // Public Route: Redirect to home if already logged in
   const PublicRoute = ({ children }) => {
     if (loading) return null;
     if (session) return <Navigate to="/" replace />;
