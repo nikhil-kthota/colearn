@@ -23,7 +23,7 @@ const Footer = () => {
 
             <div className="footer-right">
                 <a
-                    href="https://github.com/nikhil-kthota/collaborative-learning"
+                    href="https://github.com/nikhil-kthota/colearn"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="github-link"

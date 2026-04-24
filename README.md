@@ -46,7 +46,7 @@ The real-time code editor is supported by a dedicated Node.js backend deployed o
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/nikhil-kthota/collaborative-learning.git
+    git clone https://github.com/nikhil-kthota/colearn.git
     ```
 2.  Install dependencies:
     ```bash

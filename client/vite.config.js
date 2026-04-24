@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // Use root base for Vercel, but keep the repo name for GitHub Pages
-  base: process.env.VERCEL ? '/' : '/collaborative-learning/',
+  base: process.env.VERCEL ? '/' : '/colearn/',
 })
