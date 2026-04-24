@@ -1,6 +1,6 @@
 # CoLearn - Collaborative Learning Platform
 
-[View Live Demo](https://nikhil-kthota.github.io/collaborative-learning)
+[View Live Demo](https://colearn-ecru.vercel.app/)
 
 CoLearn was built as a central space for students to study together more effectively. It brings real-time chat, file sharing, and AI study tools into one workspace so teams can focus on learning without having to jump between different apps.
 
